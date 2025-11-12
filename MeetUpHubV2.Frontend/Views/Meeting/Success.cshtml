@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Buluşma Onaylandı";
+}
+
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <div class="card shadow-lg border-success border-2">
+                
+                @* f4.png'deki gibi üstteki yeşil tik ikonu *@
+                <div class="text-center" style="margin-top: -50px;">
+                    <i class="fas fa-check-circle fa-6x text-success bg-white rounded-circle p-1"></i>
+                </div>
+
+                <div class="card-body text-center p-5">
+                    
+                    <h1 class="card-title text-success fw-bold">Buluşma Başarılı!</h1>
+                    <p class="card-text text-muted fs-5">
+                        Oylama tamamlandı ve etkinliğiniz başarıyla oluşturuldu.
+                    </p>
+
+                    <hr class="my-4">
+
+                    <div id="eventDetails">
+                        
+                        <h4 class="fw-bold" id="eventTitle">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </h4>
+                        
+                        <p class="fs-5 mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Mekan:</strong> <span id="eventVenue">...</span>
+                        </p>
+                        <p class="fs-5">
+                            <i class="fas fa-clock text-success me-2"></i>
+                            <strong>Saat:</strong> <span id="eventTime">...</span>
+                        </p>
+                        
+                    </div>
+                    <div class="d-grid mt-4">
+                        <a href="/" class="btn btn-success btn-lg">
+                            <i class="fas fa-home me-2"></i> Ana Sayfaya Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // 1. Oylama odasından kaydettiğimiz sonuçları al
+            const eventResultString = sessionStorage.getItem("eventResult");
+            
+            if (!eventResultString) {
+                console.error("Etkinlik sonucu bulunamadı. Ana sayfaya yönlendiriliyor.");
+                // window.location.href = "/"; // Veya hata göster
+                document.getElementById("eventTitle").textContent = "Hata";
+                document.getElementById("eventVenue").textContent = "Sonuçlar yüklenemedi.";
+                document.getElementById("eventTime").textContent = "-";
+                return;
+            }
+
+            // 2. JSON string'ini objeye çevir
+            // Bu, backend'deki 'CreateEventDto' objemizdir
+            const eventResult = JSON.parse(eventResultString);
+            console.log("Etkinlik Sonucu Yüklendi:", eventResult);
+
+            // 3. Ekrana verileri yazdır
+            // (f4.png'de Sivas Çifte Minare gösteriliyor, biz kazanan VenueId'yi
+            // ve saat olarak 'Hour' (örn: "13:00") kullanacağız)
+            
+            document.getElementById("eventTitle").textContent = eventResult.title;
+            document.getElementById("eventTime").textContent = eventResult.hour || "Belirlenmedi";
+            
+            // Mekan Adı: eventResult objesinde 'venueId' var ama 'venueName' yok.
+            // Şimdilik sadece ID'yi yazalım.
+            // TODO: (İleri Seviye) venueId ile API'den mekanın adını çekebilirsin.
+            document.getElementById("eventVenue").textContent = `Mekan ID: ${eventResult.venueId}`;
+
+            
+            // 4. Veriyi temizle (Sayfa yenilendiğinde tekrar görünmesin)
+            sessionStorage.removeItem("votingRoomId");
+            sessionStorage.removeItem("votingOptions");
+            sessionStorage.removeItem("eventResult");
+
+        });
+    </script>
+}

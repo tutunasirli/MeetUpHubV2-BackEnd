@@ -1,0 +1,373 @@
+@model MeetUpHubV2.Frontend.Models.SelectMeetingViewModel
+@using MeetUpHubV2.Entities.Enums
+@using System.Globalization
+@{
+    var categoryEnum = Model?.Category ?? RoomCategory.Coffee; 
+    var categoryName = categoryEnum.ToString(); 
+    ViewData["Title"] = categoryName + " Ayarlama";
+
+    var today = DateTime.Today;
+    var tomorrow = today.AddDays(1);
+    var dayAfterTomorrow = today.AddDays(2);
+    
+    var cultureInfo = new CultureInfo("tr-TR"); 
+
+    string todayValue = today.ToString("yyyy-MM-dd");
+    string tomorrowValue = tomorrow.ToString("yyyy-MM-dd");
+    string dayAfterValue = dayAfterTomorrow.ToString("yyyy-MM-dd");
+
+    string todayText = $"Bugün ({today.ToString("dd MMM", cultureInfo)})";
+    string tomorrowText = $"Yarın ({tomorrow.ToString("dd MMM", cultureInfo)})";
+    string dayAfterText = $"{dayAfterTomorrow.ToString("dddd", cultureInfo)} ({dayAfterTomorrow.ToString("dd MMM", cultureInfo)})";
+}
+
+<div class="container py-5 mt-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li> 
+            <li class="breadcrumb-item active" aria-current="page">@categoryName Buluşması</li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 p-4 h-100 bg-light">
+                <div class="card-body d-flex align-items-center">
+                    <div class="p-4 me-4 rounded-3 bg-danger bg-opacity-10 text-center main-category-info">
+                        <i class="fas fa-mug-hot fa-4x text-danger mb-2"></i> 
+                        <h2 class="h5 fw-bold text-dark mb-0">@categoryName</h2>
+                        <span class="small text-secondary">Buluşması</span>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold text-dark mb-2">@categoryName Buluşmasına Hoş Geldiniz!</h3>
+                        <p class="text-secondary">En keyifli sohbetler buluşuyor. Aşağıdaki adımları takip ederek hemen buluşmanızı ayarlayın.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="selectMeetingForm">
+        <input type="hidden" asp-for="Category" /> 
+        <input type="hidden" asp-for="TimeSlot" id="TimeSlot" /> 
+        <input type="hidden" asp-for="Capacity" id="Capacity" /> 
+        <input type="hidden" asp-for="City" id="City" /> 
+        <input type="hidden" asp-for="SelectedDate" id="SelectedDate" />
+
+        <div id="selectionAlert" class="alert alert-danger d-none" role="alert">
+            Lütfen tüm seçimleri yapınız.
+        </div>
+
+        <div class="row g-4">
+            <!-- Tarih Seçimi Kartları -->
+            <div class="col-lg-12">
+                <div class="card shadow-lg border-0 p-4">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-dark mb-4 border-bottom pb-3">Hangi Gün Buluşmak İstersiniz?</h3>
+                        <div class="row g-3">
+                            <div class="col-lg-4 col-md-4">
+                                <div class="selectable-card date-card card p-3 shadow-sm border h-100 cursor-pointer" data-value="@todayValue" data-target-input="#SelectedDate">
+                                    <h4 class="h5 fw-bold">@todayText</h4><i class="fas fa-calendar-day time-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                <div class="selectable-card date-card card p-3 shadow-sm border h-100 cursor-pointer" data-value="@tomorrowValue" data-target-input="#SelectedDate">
+                                    <h4 class="h5 fw-bold">@tomorrowText</h4><i class="fas fa-calendar-week time-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                <div class="selectable-card date-card card p-3 shadow-sm border h-100 cursor-pointer" data-value="@dayAfterValue" data-target-input="#SelectedDate">
+                                    <h4 class="h5 fw-bold">@dayAfterText</h4><i class="fas fa-calendar-alt time-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="SelectedDate" class="text-danger small"></span> 
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zaman Seçimi Kartları -->
+            <div class="col-lg-12">
+                <div class="card shadow-lg border-0 p-4">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-dark mb-4 border-bottom pb-3">Ne Zaman Buluşmak İstersiniz?</h3>
+                        <div class="row g-3">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card time-slot card p-3 shadow-sm border h-100 cursor-pointer" data-value="@((int)TimeSlot.Morning)" data-target-input="#TimeSlot">
+                                    <h4 class="h5 fw-bold">Sabah</h4>
+                                    <p class="text-muted small mb-0">08:00 - 11:00</p>
+                                    <i class="fas fa-sun time-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card time-slot card p-3 shadow-sm border h-100 cursor-pointer" data-value="@((int)TimeSlot.Afternoon)" data-target-input="#TimeSlot">
+                                    <h4 class="h5 fw-bold">Öğleden Sonra</h4>
+                                    <p class="text-muted small mb-0">13:00 - 15:00</p>
+                                    <i class="far fa-clock time-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card time-slot card p-3 shadow-sm border h-100 cursor-pointer" data-value="@((int)TimeSlot.Evening)" data-target-input="#TimeSlot">
+                                    <h4 class="h5 fw-bold">Akşam</h4>
+                                    <p class="text-muted small mb-0">16:00 - 18:00</p>
+                                    <i class="fas fa-moon time-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card time-slot card p-3 shadow-sm border h-100 cursor-pointer" data-value="@((int)TimeSlot.Night)" data-target-input="#TimeSlot">
+                                    <h4 class="h5 fw-bold">Gece</h4>
+                                    <p class="text-muted small mb-0">19:00 - 22:00</p>
+                                    <i class="fas fa-star time-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="TimeSlot" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grup Seçimi Kartları -->
+            <div class="col-lg-12">
+                <div class="card shadow-lg border-0 p-4">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-dark mb-4 border-bottom pb-3">Kaç Kişilik Bir Grup Olsun?</h3>
+                        <div class="row g-3">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card group-size card p-3 shadow-sm border h-100 cursor-pointer" data-value="2" data-target-input="#Capacity">
+                                    <h4 class="h5 fw-bold">2 Kişilik Grup</h4>
+                                    <i class="fas fa-user group-icon me-1"></i><i class="fas fa-user group-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card group-size card p-3 shadow-sm border h-100 cursor-pointer" data-value="3" data-target-input="#Capacity">
+                                    <h4 class="h5 fw-bold">3 Kişilik Grup</h4>
+                                    <i class="fas fa-user group-icon me-1"></i><i class="fas fa-user group-icon me-1"></i><i class="fas fa-user group-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="selectable-card group-size card p-3 shadow-sm border h-100 cursor-pointer" data-value="5" data-target-input="#Capacity">
+                                    <h4 class="h5 fw-bold">5 Kişilik Grup</h4>
+                                    <i class="fas fa-users group-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Capacity" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Şehir Seçimi -->
+            <div class="col-lg-12">
+                <div class="card shadow-lg border-0 p-4">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-dark mb-4 border-bottom pb-3">Şu Anda Hangi Şehirdesiniz?</h3>
+                        <div class="mb-3">
+                            <select asp-for="City" class="form-select" id="citySelect">
+                                <option value="" selected disabled>Şehir Seçiniz</option>
+                                <option value="İstanbul">İstanbul</option>
+                                <option value="Ankara">Ankara</option>
+                                <option value="İzmir">İzmir</option>
+                                <option value="Isparta">Isparta</option>
+                            </select>
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button id="joinButton" type="button" class="btn btn-danger btn-lg disabled" disabled>Etkinliğe Katıl</button>
+            <p class="text-muted small mt-2">Yeni arkadaşlar edinmeye hazır mısınız?</p>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+$(document).ready(function () {
+
+    var today = new Date("@today.ToString("yyyy-MM-dd")" + "T00:00:00Z");
+
+    const timeSlotStartHours = {
+        @( ((int)TimeSlot.Morning).ToString() ): 9,
+        @( ((int)TimeSlot.Afternoon).ToString() ): 13,
+        @( ((int)TimeSlot.Evening).ToString() ): 16,
+        @( ((int)TimeSlot.Night).ToString() ): 19
+    };
+
+    const $joinButton = $('#joinButton');
+    const $selectionAlert = $('#selectionAlert');
+
+    const $categoryInput = $('input[name="Category"]');
+    const $timeSlotInput = $('#TimeSlot');
+    const $capacityInput = $('#Capacity');
+    const $cityInput = $('#City');
+    const $selectedDateInput = $('#SelectedDate');
+
+    const categoryMap = {
+        "Coffee": 1,
+        "Dessert": 2,
+        "Food": 3,
+        "CoffeeAndDessert": 4
+    };
+
+    $categoryInput.val(categoryMap[$categoryInput.val()] || 1);
+
+    $('.selectable-card').on('click', function () {
+        var $this = $(this);
+        if ($this.hasClass('disabled')) return;
+
+        var targetInputSelector = $this.data('target-input');
+        var value = $this.data('value');
+
+        var cardTypeClass = '';
+        if ($this.hasClass('date-card')) cardTypeClass = '.date-card';
+        else if ($this.hasClass('time-slot')) cardTypeClass = '.time-slot';
+        else if ($this.hasClass('group-size')) cardTypeClass = '.group-size';
+
+        $this.closest('.card-body').find('.selectable-card' + cardTypeClass + ':not(.disabled)')
+            .removeClass('border-danger border-2 shadow');
+
+        $this.addClass('border-danger border-2 shadow');
+        $(targetInputSelector).val(value).trigger('change');
+
+        if ($this.hasClass('date-card')) {
+            updateAvailableTimeSlots();
+        }
+    });
+
+    $('#citySelect').on('change', function() {
+        $('#City').val($(this).val()).trigger('change');
+    });
+
+    function checkSelections() {
+        var timeSlotSelected = $timeSlotInput.val() != null && $timeSlotInput.val() !== '';
+        var capacitySelected = $capacityInput.val() != null && $capacityInput.val() !== '';
+        var citySelected = $cityInput.val() != null && $cityInput.val() !== '';
+        var dateSelected = $selectedDateInput.val() != null && $selectedDateInput.val() !== '';
+
+        var allSelected = timeSlotSelected && capacitySelected && citySelected && dateSelected;
+
+        var alertText = "Lütfen ";
+        var missing = [];
+        if (!dateSelected) missing.push("tarihi");
+        if (!timeSlotSelected) missing.push("buluşma zamanını");
+        if (!capacitySelected) missing.push("grup büyüklüğünü");
+        if (!citySelected) missing.push("şehri");
+        alertText += missing.join(", ") + " seçiniz.";
+        $selectionAlert.text(alertText);
+
+        if (allSelected) {
+            $joinButton.removeClass('disabled').prop('disabled', false);
+            $selectionAlert.addClass('d-none');
+        } else {
+            $joinButton.addClass('disabled').prop('disabled', true);
+            $selectionAlert.removeClass('d-none'); 
+        }
+    }
+
+    function updateAvailableTimeSlots() {
+        var selectedDateStr = $selectedDateInput.val();
+        if (!selectedDateStr) {
+            $('.selectable-card.time-slot').addClass('disabled bg-light text-muted pe-none')
+                                           .removeClass('border-danger border-2 shadow cursor-pointer');
+            $timeSlotInput.val('').trigger('change');
+            return;
+        }
+
+        var selectedDate = new Date(selectedDateStr + "T00:00:00Z");
+        var isToday = selectedDate.toDateString() === today.toDateString();
+        var currentHour = isToday ? (new Date()).getHours() : -1;
+
+        $('.selectable-card.time-slot').each(function() {
+            var $card = $(this);
+            var slotValue = parseInt($card.data('value'));
+            var slotStartHour = timeSlotStartHours[slotValue];
+
+            if (isToday && slotStartHour <= currentHour) { 
+                $card.addClass('disabled bg-light text-muted pe-none')
+                     .removeClass('border-danger border-2 shadow cursor-pointer');
+                if ($timeSlotInput.val() == slotValue) {
+                    $timeSlotInput.val('').trigger('change');
+                }
+            } else {
+                $card.removeClass('disabled bg-light text-muted pe-none')
+                     .addClass('cursor-pointer');
+            }
+        });
+        checkSelections();
+    }
+
+    $('#TimeSlot, #Capacity, #City, #SelectedDate').on('change', checkSelections);
+    updateAvailableTimeSlots();
+
+    function showAlert(message) {
+        $selectionAlert.text(message).removeClass('d-none');
+    }
+
+    $joinButton.on('click', async function(event) {
+        var $this = $(this);
+        $this.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Katılıyor...');
+
+        const token = localStorage.getItem("jwt_token");
+
+        if (!token) {
+            showAlert("Oturumunuz zaman aşımına uğramış. Lütfen tekrar giriş yapın.");
+            $this.html('Etkinliğe Katıl');
+            checkSelections(); 
+            return;
+        }
+
+        const joinRequest = {
+            Category: parseInt($categoryInput.val()), 
+            TimeSlot: parseInt($timeSlotInput.val()),
+            Capacity: parseInt($capacityInput.val()),
+            SelectedDate: $selectedDateInput.val() + "T00:00:00Z" 
+        };
+
+        try {
+            const response = await fetch('http://localhost:5292/api/matching/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(joinRequest)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Join response:", data); // Debug
+                if (data.success && data.room) {
+                    // DÜZELTME: 'Id' büyük harf
+                    window.location.href = `/Meeting/WaitingRoom?roomId=${data.room.id}`;
+                } else {
+                    showAlert(data.message || "Odaya katılırken bir sorun oluştu.");
+                }
+            } else {
+                const errorData = await response.json();
+                showAlert(errorData.message || `Sunucu hatası: ${response.status}`);
+            }
+
+        } catch (error) {
+            showAlert(`Bağlantı hatası: ${error.message}`);
+        }
+
+        $this.html('Etkinliğe Katıl');
+        checkSelections();
+    });
+});
+    </script>
+}
+
+
+<style>
+    .cursor-pointer { cursor: pointer; }
+    .selectable-card { transition: all 0.2s ease-in-out; }
+    .selectable-card:hover:not(.disabled) { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+    .time-icon, .group-icon { font-size: 1.5rem; color: #dc3545; }
+    .main-category-info i { color: #dc3545; }
+</style>

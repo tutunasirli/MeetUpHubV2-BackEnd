@@ -1,0 +1,107 @@
+﻿@model MeetUpHubV2.Frontend.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Üye Ol";
+}
+
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-lg border-0 p-4 p-md-5">
+                <h2 class="text-center fw-bold text-dark mb-4">Hemen Yeni Hesap Oluştur</h2>
+                <hr class="text-danger mb-4"/>
+
+                <div id="alertContainer"></div> <!-- Başarı/Hata mesajları buraya gelecek -->
+
+                <form id="registerForm">
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label">Ad</label>
+                            <input asp-for="Name" class="form-control" id="Name" placeholder="Adınız" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Surname" class="form-label">Soyad</label>
+                            <input asp-for="Surname" class="form-control" id="Surname" placeholder="Soyadınız" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">E-posta</label>
+                        <input asp-for="Email" class="form-control" id="Email" placeholder="E-posta adresiniz" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="BirthDate" class="form-label">Doğum Tarihi</label>
+                        <input asp-for="BirthDate" type="date" class="form-control" id="BirthDate" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">Telefon Numarası</label>
+                        <input asp-for="PhoneNumber" class="form-control" id="PhoneNumber" placeholder="Telefon Numaranız" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label">Şifre</label>
+                        <input asp-for="Password" type="password" class="form-control" id="Password" placeholder="Şifreniz" />
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-danger btn-lg">Hesap Oluştur</button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <p class="small text-muted mb-0">Zaten hesabın var mı? 
+                            <a asp-action="Login" class="text-danger text-decoration-none fw-bold">Giriş Yap</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const form = document.getElementById("registerForm");
+        const alertContainer = document.getElementById("alertContainer");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const data = {
+                Name: document.getElementById("Name").value,
+                Surname: document.getElementById("Surname").value,
+                Email: document.getElementById("Email").value,
+                PhoneNumber: document.getElementById("PhoneNumber").value,
+                BirthDate: document.getElementById("BirthDate").value,
+                Password: document.getElementById("Password").value
+            };
+
+            try {
+                const response = await fetch("http://localhost:5292/api/user/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const text = await response.text();
+
+                alertContainer.innerHTML = ""; // Önce temizle
+                const alertDiv = document.createElement("div");
+
+                if (response.ok) {
+                    alertDiv.className = "alert alert-success";
+                    alertDiv.innerText = text;
+                    form.reset();
+                } else {
+                    alertDiv.className = "alert alert-danger";
+                    alertDiv.innerText = text;
+                }
+
+                alertContainer.appendChild(alertDiv);
+
+            } catch (err) {
+                alertContainer.innerHTML = `<div class="alert alert-danger">API bağlantı hatası: ${err.message}</div>`;
+            }
+        });
+    </script>
+}

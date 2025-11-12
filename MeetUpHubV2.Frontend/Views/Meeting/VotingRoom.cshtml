@@ -1,0 +1,276 @@
+@{
+    ViewData["Title"] = "Oylama Ekranı";
+}
+
+<div class="container py-5 mt-5">
+    
+    <div class="card shadow-sm border-danger mb-4">
+        <div class="card-body text-center p-4">
+            <h2 class="card-title text-danger mb-0">Oylama için son <span id="countdownTimer">30</span> saniye!</h2>
+            <p class="text-muted mb-0">Lütfen mekan ve saat seçiminizi yapın.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i> Mekan Seçimi</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Grup üyeleriyle birlikte buluşmak istediğiniz mekanı oylayın.</p>
+                    <div id="venueList" class="list-group">
+                        <div classid="venueLoading" class="text-center p-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-clock me-2"></i> Saat Seçimi</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Buluşmak istediğiniz saati oylayın.</p>
+                    <div id="timeList" class="list-group">
+                        <div classid="timeLoading" class="text-center p-3">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // Sayfa (DOM) tamamen yüklendiğinde bu fonksiyonu çalıştır
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // --- 1. VERİLERİ VE ELEMENTLERİ HAZIRLA ---
+            
+            // Bir önceki sayfadan (WaitingRoom.cshtml) kaydettiğimiz verileri al
+            const roomId = sessionStorage.getItem("votingRoomId");
+            const optionsString = sessionStorage.getItem("votingOptions");
+            
+            // HTML elementlerini seç
+            const venueList = document.getElementById("venueList");
+            const timeList = document.getElementById("timeList");
+            const countdownElement = document.getElementById("countdownTimer");
+            
+            // Oyları tutmak için (Daha sonra 'ReceiveCurrentVotes' ile dolacak)
+            let venueVotes = {};
+            let timeVotes = {};
+
+            // --- 2. HATA KONTROLÜ VE YÖNLENDİRME ---
+            if (!roomId || !optionsString) {
+                console.error("Oylama verisi (roomId veya options) bulunamadı. Bekleme odasına yönlendiriliyor...");
+                alert("Oylama oturumu bulunamadı. Lütfen tekrar deneyin.");
+                window.location.href = "/Matching/WaitingRoom"; // Hata varsa bekleme odasına geri dön
+                return;
+            }
+
+            // JSON string'ini tekrar JavaScript objesine çevir
+            const options = JSON.parse(optionsString);
+            // console.log("Oylama seçenekleri yüklendi:", options);
+
+
+            // --- 3. SİGNAV BAĞLANTISINI BAŞLAT VE ODALARA KATIL ---
+            
+            async function initializeSignalR() {
+                try {
+                    // (f1.png'de yaptığımız gibi) Token'ı al ve bağlantıyı başlat
+                    // _Layout.cshtml'de yüklenen 'signalRManager'ı kullanıyoruz
+                    await signalRManager.start(); // Bu, token'ı alıp bağlanır
+                    
+                    // Bu odaya ait anlık oy (ReceiveVote) mesajlarını almak için gruba katıl
+                    await signalRManager.joinRoom(roomId);
+                    
+                    // Dinleyicileri (listeners) ayarla
+                    setupSignalRListeners();
+                    
+                    // Oylama seçeneklerini ekrana çiz
+                    renderVenueOptions(options.venues);
+                    renderTimeOptions(options.timeSlots);
+                    
+                    // Geri sayımı başlat
+                    startCountdown(options.duration || 30);
+                    
+                } catch (err) {
+                    console.error("SignalR başlatılamadı (VotingRoom):", err);
+                    alert("Bağlantı hatası. Sayfayı yenileyin.");
+                }
+            }
+
+            // --- 4. SİGNAV DİNLEYİCİLERİNİ (Listeners) AYARLA ---
+            
+            function setupSignalRListeners() {
+                // Dinleyici 1: Yeni Mekan Oyu Geldiğinde
+                signalRManager.onReceiveVenueVote(function(venueId, newVoteCount) {
+                    console.log(`Mekan oyu geldi: ${venueId}, Sayı: ${newVoteCount}`);
+                    updateVoteCountUI('venue', venueId, newVoteCount);
+                });
+
+                // Dinleyici 2: Yeni Saat Oyu Geldiğinde
+                signalRManager.onReceiveTimeVote(function(timeSlot, newVoteCount) {
+                    console.log(`Saat oyu geldi: ${timeSlot}, Sayı: ${newVoteCount}`);
+                    updateVoteCountUI('time', timeSlot, newVoteCount);
+                });
+                
+                // Dinleyici 3: Odaya Girdiğimizde Mevcut Oyları Al
+                signalRManager.onReceiveCurrentVotes(function(session) {
+                    console.log("Mevcut oylar alındı:", session);
+                    venueVotes = session.venueVotes;
+                    timeVotes = session.timeVotes;
+                    // Butonlar yüklendikten sonra oyları güncelle
+                    renderVenueOptions(options.venues);
+                    renderTimeOptions(options.timeSlots);
+                });
+
+                // Dinleyici 4: OYLAMA BİTTİ (f4.png'ye geçiş)
+                signalRManager.onVotingFinished(function(eventDetails) {
+                    console.log("Oylama bitti! Sonuç:", eventDetails);
+                    
+                    // Bütün butonları kilitle
+                    document.querySelectorAll('#venueList button, #timeList button').forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.add("disabled");
+                    });
+                    countdownElement.textContent = "0";
+                    
+                    // Sonucu bir sonraki sayfaya (f4.png) taşımak için kaydet
+                    sessionStorage.setItem("eventResult", JSON.stringify(eventDetails));
+                    
+                    // Başarı (f4.png) sayfasına yönlendir
+                    alert("Oylama tamamlandı! Sonuçlar gösteriliyor...");
+                    window.location.href = "/Matching/Success"; // TODO: Başarı sayfasının URL'i
+                });
+            }
+            
+            // --- 5. OYLAMA SEÇENEKLERİNİ EKANA ÇİZ (Render) ---
+            
+            function renderVenueOptions(venues) {
+                venueList.innerHTML = ""; // Yükleniyor spinner'ını temizle
+                if (!venues || venues.length === 0) {
+                    venueList.innerHTML = "<p>Oylanacak mekan bulunamadı.</p>";
+                    return;
+                }
+                
+                venues.forEach(venue => {
+                    // Backend'den (RoomHub) gelen 'venueVotes' objesindeki key'ler (int)
+                    // JSON'da string'e dönüşebilir ("1"), C#'da int (1).
+                    // İki durumu da kontrol edelim.
+                    let voteCount = venueVotes[venue.id] || 0;
+                    
+                    // Butonu oluştur
+                    venueList.innerHTML += `
+                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                data-type="venue" data-id="${venue.id}">
+                            ${venue.name}
+                            <span class="badge bg-primary rounded-pill">${voteCount}</span>
+                        </button>`;
+                });
+            }
+
+            function renderTimeOptions(timeSlots) {
+                timeList.innerHTML = ""; // Yükleniyor spinner'ını temizle
+                if (!timeSlots || timeSlots.length === 0) {
+                    timeList.innerHTML = "<p>Oylanacak saat bulunamadı.</p>";
+                    return;
+                }
+                
+                timeSlots.forEach(timeSlot => {
+                    let voteCount = timeVotes[timeSlot] || 0;
+                    
+                    timeList.innerHTML += `
+                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                data-type="time" data-id="${timeSlot}">
+                            ${timeSlot}
+                            <span class="badge bg-success rounded-pill">${voteCount}</span>
+                        </button>`;
+                });
+            }
+            
+            // --- 6. BUTONLARA TIKLAMA (Oy Verme) OLAYLARI ---
+            
+            // jQuery kullanmadığımız için (jQuery'siz saf JS)
+            // 'venueList' ve 'timeList' üzerine tıklama olayı ekliyoruz
+            venueList.addEventListener('click', function(e) {
+                // Sadece list-group-item'a tıklandıysa çalış
+                const button = e.target.closest('.list-group-item');
+                if (button && !button.disabled) {
+                    const venueId = parseInt(button.dataset.id); // 'data-id'den al (int olarak)
+                    console.log(`Mekana oy verildi: ${venueId}`);
+                    // Oyu backend'e gönder
+                    signalRManager.voteForVenue(roomId, venueId);
+                    
+                    // (İsteğe bağlı) Tıkladıktan sonra butonu pasif yap
+                    // button.disabled = true; 
+                }
+            });
+
+            timeList.addEventListener('click', function(e) {
+                const button = e.target.closest('.list-group-item');
+                if (button && !button.disabled) {
+                    const timeSlot = button.dataset.id; // 'data-id'den al (string olarak)
+                    console.log(`Saate oy verildi: ${timeSlot}`);
+                    // Oyu backend'e gönder
+                    signalRManager.voteForTime(roomId, timeSlot);
+                }
+            });
+
+            // --- 7. YARDIMCI FONKSİYONLAR ---
+            
+            // Arayüzdeki oy sayısını anlık güncelleyen fonksiyon
+            function updateVoteCountUI(type, id, count) {
+                // data-type='venue' ve data-id='5' olan butonu bul
+                const button = document.querySelector(`button[data-type='${type}'][data-id='${id}']`);
+                if (button) {
+                    const badge = button.querySelector('.badge');
+                    if (badge) {
+                        badge.textContent = count;
+                    }
+                }
+            }
+
+            // Geri sayım sayacını başlatan fonksiyon
+            function startCountdown(seconds) {
+                let timer = seconds;
+                countdownElement.textContent = timer;
+                
+                const interval = setInterval(() => {
+                    timer--;
+                    countdownElement.textContent = timer;
+                    
+                    if (timer <= 0) {
+                        clearInterval(interval);
+                        countdownElement.textContent = "0";
+                        // Süre dolunca tüm butonları kilitle
+                        document.querySelectorAll('#venueList button, #timeList button').forEach(btn => {
+                            btn.disabled = true;
+                            btn.classList.add("disabled");
+                            btn.classList.remove("list-group-item-action");
+                        });
+                        // Backend (RoomManager) zaten sonucu gönderecek,
+                        // biz sadece arayüzü kilitliyoruz.
+                    }
+                }, 1000); // Her saniye
+            }
+            
+            // --- 8. BAŞLAT! ---
+            initializeSignalR();
+
+        }); // document ready sonu
+    </script>
+}

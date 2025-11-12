@@ -1,0 +1,125 @@
+﻿@* @using Microsoft.AspNetCore.Http <- Gerekli değil *@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MeetUpHub</title>
+    
+    @* CSS VE FONT LİNKLERİ *@
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    
+    @* NAVIGASYON BAR BAŞLANGIÇ *@
+    <header class="navbar-area border-bottom bg-white shadow-sm fixed-top">
+        <nav class="navbar navbar-expand-lg navbar-light container">
+            
+            <a class="navbar-brand text-dark fw-bold fs-4" asp-area="" asp-controller="Home" asp-action="Index">
+                MeetUpHub
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                
+                @* ORTA KISIM: NAVİGASYON LİNKLERİ *@
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item me-4">
+                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Anasayfa</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link text-dark" href="/#categories">Kategoriler</a>
+                    </li>
+                    <li class="nav-item me-4">
+                        <a class="nav-link text-dark" href="/#contact">İletişim</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Meeting" asp-action="Select">Buluşmalar</a>
+                    </li>
+                </ul>
+                
+                @* === DOĞRU OTURUM KONTROLÜ === *@
+                <div class="d-flex align-items-center">
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        @* KULLANICI GİRİŞ YAPMIŞSA *@
+                        <span class="navbar-text me-3 fw-bold text-dark">
+                            Hoş geldin, @User.Identity.Name! 
+                        </span>
+                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="d-inline">
+                             <button type="submit" class="btn btn-danger">Çıkış Yap</button>
+                        </form>
+                    }
+                    else
+                    {
+                        @* KULLANICI GİRİŞ YAPMAMIŞSA *@
+                        
+                        @* Doğrudan Login Sayfasına Link (Modal kaldırıldı) *@
+                        <a class="btn btn-outline-danger me-2" asp-controller="Account" asp-action="Login">Giriş Yap</a> 
+                        
+                        <a class="btn btn-danger" asp-controller="Account" asp-action="Register">Üye Ol</a>
+                    }
+                </div>
+                @* === OTURUM KONTROLÜ SONU === *@
+                 
+            </div>
+        </nav>
+    </header>
+    @* NAVIGASYON BAR BİTİŞ *@
+
+    <main role="main">
+        <div class="container-fluid p-0"> 
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="bg-light text-center text-muted py-3 mt-5 border-top">
+        <div class="container">
+            &copy; @DateTime.Now.Year - MeetUpHub | Gerçek Bağlantılar, Gerçek Buluşmalar
+        </div>
+    </footer>
+
+    @* === LOGIN MODAL (DEVRE DIŞI BIRAKILDI) === *@
+    @* Modal'ı ve içindeki _LoginFormPartial çağrısını yoruma alıyoruz *@
+    @*
+    <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="actionModalLabel">Giriş Yap</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @await Html.PartialAsync("_LoginFormPartial", new MeetUpHubV2.Frontend.Models.LoginViewModel()) 
+                </div>
+            </div>
+        </div>
+    </div>
+    *@
+    @* === MODAL SONU === *@
+
+    @* === SCRIPT'LER === *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    @* DOĞRULAMA SCRIPT'LERİ BURADAN KALDIRILDI! 
+    Sadece ihtiyaç duyan sayfalara (Register.cshtml, Login.cshtml) eklenecekler.
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    *@
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script src="~/js/signalRManager.js"></script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

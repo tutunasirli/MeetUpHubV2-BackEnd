@@ -1,0 +1,43 @@
+@* === DÜZELTİLMİŞ MODEL DİREKTİFİ === *@
+@model MeetUpHubV2.Frontend.Models.LoginViewModel 
+
+@* Bu form, Modal'ın içine yüklendiği için Layout ve Scripts bölümlerini içermez. *@
+
+<div class="p-3">
+    <h4 class="text-center fw-bold text-dark mb-4">Hesabına Giriş Yap</h4>
+    <hr class="text-danger mb-4"/>
+    
+    @* Formun POST edilmesi, Account Controller'daki Login metodunu tetikler *@
+    <form asp-controller="Account" asp-action="Login" method="post">
+        @* Hata Özeti: Kullanıcı adı/şifre hatalı gibi mesajlar burada görünür *@
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">E-posta</label>
+            <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        
+        <div class="mb-4">
+            <label asp-for="Password" class="form-label">Şifre</label>
+            <input asp-for="Password" type="password" class="form-control" placeholder="Şifreniz" />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        
+        <div class="d-grid">
+            <button type="submit" class="btn btn-danger btn-lg">Giriş Yap</button>
+        </div>
+        
+        <div class="text-center mt-3">
+            <p class="small text-muted mb-0">Hesabın yok mu? 
+                @* Register tam sayfa açılır *@
+                <a asp-controller="Account" asp-action="Register" class="text-danger text-decoration-none fw-bold">Hemen Üye Ol</a>
+            </p>
+        </div>
+    </form>
+</div>
+
+@* Partial view içinde validation script'lerini tekrar yüklemeye genellikle gerek yoktur, _Layout'ta yüklenir *@
+@* @section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+} *@

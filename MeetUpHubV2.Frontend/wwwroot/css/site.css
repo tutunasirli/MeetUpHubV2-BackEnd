@@ -1,0 +1,106 @@
+/* ======================================================== */
+/* GENEL AYARLAR VE FONT */
+/* ======================================================== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fffafa; /* Çok hafif pembe/kırık beyaz tonu */
+    padding-top: 80px; /* Sabit Navbar için boşluk */
+    margin-bottom: 60px; /* Footer için boşluk */
+    color: #333;
+}
+
+.navbar-area {
+    border-bottom: none !important;
+}
+
+/* ======================================================== */
+/* KATEGORİ KARTLARI (ANA SAYFA) */
+/* ======================================================== */
+.card-category {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.card-category:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-img-top {
+    object-fit: cover;
+    height: 200px; 
+}
+
+.container {
+    max-width: 1200px; /* Genişliği 1140px veya 1320px yerine biraz daraltır */
+}
+
+/* ======================================================== */
+/* BULUŞMA SEÇİM SAYFASI (MEETING/SELECT) */
+/* ======================================================== */
+
+/* Sol Taraftaki Büyük İkonlu Kart */
+.main-category-info {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem !important; 
+    /* İkonun daha büyük görünmesi için boyutu artırma */
+    min-width: 150px; 
+}
+
+/* İkon Boyutu */
+.fa-4x {
+    font-size: 3.5em !important; 
+}
+
+/* Seçim Kartları (Zaman, Grup) Genel Stilleri */
+.time-slot, .group-size {
+    position: relative;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    text-align: center;
+    min-height: 120px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Seçim Kutularının Üzerine Gelme Efekti */
+.time-slot:hover, .group-size:hover {
+    border-color: #dc3545 !important; 
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+}
+
+/* Seçilmiş Karta Kırmızı Çerçeve ve Arka Plan */
+.time-slot.selected, .group-size.selected {
+    border: 2px solid #dc3545 !important; 
+    background-color: #fcebeb; 
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.1); 
+}
+
+/* Zaman ve Grup İkonlarının Konumu ve Rengi */
+.time-slot .time-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    font-size: 2.5rem;
+    color: rgba(220, 53, 69, 0.2); 
+    z-index: 0;
+}
+
+/* Grup ikonlarının rengi ve boyutu */
+.group-size .fa-user, .group-size .fa-users {
+    font-size: 1.5rem;
+    color: #dc3545;
+    margin-right: 2px;
+    margin-top: 5px;
+}
+/* İçeriklerin ikonun üzerinde kalmasını sağlar */
+.time-slot *, .group-size * {
+    position: relative;
+    z-index: 1;
+}

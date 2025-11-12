@@ -1,0 +1,192 @@
+﻿@{
+    ViewData["Title"] = "Anasayfa";
+}
+
+@* KRİTİK: Anasayfa butonu bu ID'yi hedefliyor. *@
+<section id="top" class="py-5"> 
+
+    <div class="container my-5">
+        
+        <div class="row align-items-center justify-content-between">
+            
+            @* SOL KISIM: BAŞLIK, METİN VE BUTONLAR *@
+            <div class="col-lg-6 col-md-12 mb-5 mb-lg-0">
+                <h1 class="display-4 fw-bold text-dark mb-3" style="line-height: 1.15;">
+    Gerçek <span class="text-danger">Buluşmalar,</span> Gerçek <span class="text-danger">Bağlantılar</span>
+</h1>
+                
+                <p class="lead mt-4 text-secondary pe-lg-5">
+                    MeetApp ile aynı ilgi alanlarına sahip insanlarla tanış, kahve, yemek, ve daha fazlası için bir araya gel. Dijital dünyada kalmayıp, gerçek hayatta da sosyalleş!
+                </p>
+                
+                @* İSTATİSTİK KARTLARI - HTML VE data-target DEĞERLERİ *@
+                <div class="d-flex flex-wrap mt-5 align-items-center">
+                    <div class="me-4 text-center">
+                        <p class="display-6 fw-bold text-danger mb-0">
+                            <span class="counter" data-target="10000">0</span>+ 
+                        </p>
+                        <p class="text-muted small">Üye Sayısı</p>
+                    </div>
+                    <div class="me-4 text-center border-start ps-4">
+                        <p class="display-6 fw-bold text-danger mb-0">
+                            <span class="counter" data-target="500">0</span>+
+                        </p>
+                        <p class="text-muted small">Aktif Etkinlik</p>
+                    </div>
+                    <div class="text-center border-start ps-4">
+                        <p class="display-6 fw-bold text-danger mb-0">
+                            <span class="counter" data-target="50">0</span>+
+                        </p>
+                        <p class="text-muted small">Şehir</p>
+                    </div>
+                </div>
+                
+                @* CTA BUTONU *@
+                <div class="mt-4">
+                    <a class="btn btn-danger btn-lg me-3" asp-controller="Account" asp-action="Register">
+                        Şimdi Kaydol
+                    </a>
+                    
+                </div>
+            </div>
+            
+            @* SAĞ KISIM: GÖRSEL (5 Sütun alır ve sağa yaslanır) *@
+            <div class="col-lg-5 col-md-12 d-flex justify-content-center">
+            <img src="~/images/anasayfa.jpeg" class="img-fluid rounded shadow-lg" alt="Gerçek Buluşmalar Görseli">
+            </div>
+            
+        </div>
+        
+    </div>
+</section>
+@* <section id="top"> burada bitiyor *@
+
+
+@* ========================================================= *@
+@* KATEGORİLER BÖLÜMÜ *@
+@* ========================================================= *@
+<section id="categories" class="py-5 mt-4">
+    <div class="container">
+        
+        @* BAŞLIK *@
+        <h2 class="text-center display-6 fw-bold text-dark mb-5">
+    Kategoriler
+</h2>
+        
+        @* KATEGORİ KARTLARI SATIRI *@
+        <div class="row g-4 justify-content-center pt-5">
+            
+            @* KAHVE KARTI *@
+            <div class="col-lg-4 col-md-6 col-sm-10">
+                <a href="@Url.Action("Select", "Meeting", new { categoryName = "Kahve Molası" })" class="text-decoration-none">" 
+                    <div class="card card-category border-0 shadow-sm overflow-hidden h-100 rounded-3">
+                        <img src="~/images/coffee.png" class="img-fluid rounded shadow-lg" alt="Kahve Buluşmaları">
+                        <div class="card-body text-center py-4 bg-white">
+                            <h5 class="card-title fw-bold text-dark mb-0">Kahve</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            @* TATLI KARTI *@
+            <div class="col-lg-4 col-md-6 col-sm-10">
+                <a href="@Url.Action("Select", "Meeting", new { categoryName = "Tatlı Molası" })" class="text-decoration-none">" 
+                    <div class="card card-category border-0 shadow-sm overflow-hidden h-100 rounded-3">
+                        <img src="~/images/tatli.png" class="img-fluid rounded shadow-lg" alt="Tatlı Buluşmaları">
+                        <div class="card-body text-center py-4 bg-white">
+                            <h5 class="card-title fw-bold text-dark mb-0">Tatlı</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            @* YEMEK KARTI *@
+            <div class="col-lg-4 col-md-6 col-sm-10">
+                <a href="@Url.Action("Select", "Meeting", new { categoryName = "Yemek Molası" })" class="text-decoration-none">" 
+                    <div class="card card-category border-0 shadow-sm overflow-hidden h-100 rounded-3">
+                        <img src="~/images/yemek.png" class="img-fluid rounded shadow-lg" alt="Yemek Buluşmaları">
+                        <div class="card-body text-center py-4 bg-white">
+                            <h5 class="card-title fw-bold text-dark mb-0">Yemek</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+
+@* ========================================================= *@
+@* 3. İLETİŞİM BÖLÜMÜ *@
+@* ========================================================= *@
+<section id="contact" class="py-5">
+    <div class="container mt-5">
+        <h2 class="text-center display-6 fw-bold text-dark mb-5">
+            Bizimle <span class="text-danger">İletişime Geçin</span>
+        </h2>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-10">
+                <div class="card shadow-lg p-4 p-md-5 border-0">
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="contactName" class="form-label text-muted">Adınız Soyadınız</label>
+                                <input type="text" class="form-control" id="contactName" placeholder="Adınız">
+                            </div>
+                            <div class="mb-3">
+                                <label for="contactEmail" class="form-label text-muted">E-posta Adresiniz</label>
+                                <input type="email" class="form-control" id="contactEmail" placeholder="ornek@mail.com">
+                            </div>
+                            <div class="mb-4">
+                                <label for="contactMessage" class="form-label text-muted">Mesajınız</label>
+                                <textarea class="form-control" id="contactMessage" rows="5" placeholder="Bize ne söylemek istersiniz?"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-lg w-100">Mesajı Gönder</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const counters = document.querySelectorAll('.counter');
+            const interval = 20; 
+            const totalTime = 4000; 
+
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                // Metin kontrolünü en üstteki ebeveynden altındaki 'small' etiketi üzerinden yapıyoruz
+                const elementText = counter.parentElement.parentElement.querySelector('.small').innerText; 
+
+                // Üye Sayısı için özel hedef belirleme (1000'de durması istenen)
+                let finalTarget = target;
+                if (elementText.includes("Üye Sayısı")) {
+                    finalTarget = 1000; 
+                }
+
+                let current = 0;
+                
+                const steps = totalTime / interval; 
+                const increment = finalTarget / steps; 
+
+                const timer = setInterval(() => {
+                    current += increment;
+
+                    if (current >= finalTarget) {
+                        counter.innerText = finalTarget.toLocaleString('tr-TR');
+                        clearInterval(timer);
+                    } else {
+                        counter.innerText = Math.floor(current).toLocaleString('tr-TR');
+                    }
+                }, interval);
+            });
+        });
+    </script>
+}

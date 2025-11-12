@@ -1,0 +1,18 @@
+﻿@using MeetUpHubV2.Frontend.Models
+@model ErrorViewModel
+
+@{
+    ViewData["Title"] = "Hata";
+}
+
+<h1 class="text-danger">Bir Hata Oluştu</h1>
+<h2 class="text-warning">Request ID: @Model.RequestId</h2>
+
+@if (Model.ShowRequestId)
+{
+    <p>Lütfen bu ID'yi destek ekibine iletin: <strong>@Model.RequestId</strong></p>
+}
+
+<p>
+    <a asp-controller="Home" asp-action="Index">Ana Sayfaya Dön</a>
+</p>

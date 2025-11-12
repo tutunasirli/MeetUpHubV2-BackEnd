@@ -1,0 +1,162 @@
+﻿@model MeetUpHubV2.Frontend.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Giriş";
+}
+
+@* (Başarı mesajı HTML'i aynı kalıyor) *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="container mt-5 pt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container py-5 @(TempData["SuccessMessage"] == null ? "mt-5" : "")">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-lg border-0 p-4 p-md-5">
+                <h2 class="text-center fw-bold text-dark mb-4">Hesabına Giriş Yap</h2>
+                <hr class="text-danger mb-4" />
+
+                @* DÜZELTİLDİ: 'asp-' etiketleri kaldırıldı *@
+                <form id="loginForm">
+                    <input type="hidden" name="ReturnUrl" value="@ViewData["ReturnUrl"]" />
+                    
+                    @* Hata mesajları için (JS ile kontrol edilecek) *@
+                    <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">E-posta</label>
+                        <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label">Şifre</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Şifreniz" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="d-grid">
+                        @* DÜZELTİLDİ: 'type="submit"' yerine 'type="button"' *@
+                        <button id="loginButton" type="button" class="btn btn-danger btn-lg">Giriş Yap</button>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <p class="small text-muted mb-0">Hesabın yok mu? 
+                            <a asp-controller="Account" asp-action="Register" class="text-danger text-decoration-none fw-bold">Hemen Üye Ol</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* === YENİ JAVASCRIPT BÖLÜMÜ === *@
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    
+    <script>
+        $(document).ready(function () {
+            
+            const $loginButton = $('#loginButton');
+            const $loginAlert = $('#loginAlert');
+            
+            // Hata mesajı için yardımcı fonksiyon
+            function showAlert(message) {
+                $loginAlert.text(message).removeClass('d-none');
+            }
+            
+            // "Giriş Yap" butonuna tıklandığında
+            $loginButton.on('click', async function(event) {
+                
+                event.preventDefault(); 
+                
+                var $form = $('#loginForm');
+                if (!$form.valid()) {
+                    showAlert("Lütfen e-posta ve şifre alanlarını doldurun.");
+                    return;
+                }
+                
+                var $this = $(this);
+                $this.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Giriş Yapılıyor...');
+                $loginAlert.addClass('d-none');
+
+                const loginRequest = {
+                    Email: $('#Email').val(),
+                    Password: $('#Password').val()
+                };
+
+                try {
+                    // 1. ADIM: Backend API'ye (:5292) git ve Token'ı al
+                    const response = await fetch('http://localhost:5292/api/user/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(loginRequest)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json(); // { token: "ey...", ... }
+                        
+                        if (data.token) {
+                            // 2. ADIM: Token'ı JavaScript (localStorage) içine kaydet
+                            // (Select.cshtml bu token'ı burada bulacak)
+                            localStorage.setItem("jwt_token", data.token);
+                            
+                            // 3. ADIM: Token'ı Frontend C# (Cookie) içine kaydet
+                            // (AccountController'a yeni eklediğimiz metodu çağırıyoruz)
+                            await setMvcCookie(data.token);
+                            
+                            // 4. ADIM: Başarılı, yönlendir
+                            var returnUrl = $('input[name="ReturnUrl"]').val();
+                            if (returnUrl) {
+                                window.location.href = returnUrl;
+                            } else {
+                                window.location.href = '/'; // Ana Sayfa
+                            }
+                            
+                        } else {
+                            showAlert("Token alınamadı, API yanıtı hatalı.");
+                        }
+                    } else {
+                        showAlert("E-posta veya şifre hatalı.");
+                    }
+
+                } catch (error) {
+                    console.error('Login Fetch Hatası:', error);
+                    showAlert(`Bağlantı hatası: ${error.message}`);
+                }
+                
+                $this.prop('disabled', false).html('Giriş Yap');
+            });
+
+            // YARDIMCI FONKSİYON: C# Cookie'sini oluşturmak için
+            async function setMvcCookie(token) {
+                try {
+                    // AccountController'a yeni eklediğimiz metodu çağırıyoruz
+                    await fetch('/Account/SetAuthCookie', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ Token: token }) 
+                    });
+                } catch (err) {
+                    console.error("C# Cookie oluşturulamadı:", err);
+                    // Bu kritik bir hata değil, JS token'ı olduğu sürece devam edebiliriz
+                }
+            }
+
+        }); // document ready sonu
+    </script>
+}
