@@ -21,7 +21,8 @@ namespace MeetUpHubV2.DataAccess.Abstract
         Task DeleteRoom(Room room);
         Task<bool> IsRoomFull(int roomId);
         Task UpdateRoom(int roomId);
-        Task<bool> IsUserInTimeSlot(int userId, TimeSlot timeSlot); // Şimdilik sadece TimeSlot'a bakıyor
+        Task<bool> IsUserInTimeSlot(int userId, TimeSlot timeSlot, DateTime selectedDate);
+
         Task<List<Room>> GetAllRooms();
     }
 }

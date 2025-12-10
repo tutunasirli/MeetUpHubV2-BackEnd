@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using MeetUpHubV2.Entities;
-using MeetUpHubV2.Entities.Dtos.UserDtos; // Bu satırın eklendiğinden emin ol
+using MeetUpHubV2.Entities.Dtos.UserDtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -39,14 +39,14 @@ namespace MeetUpHubV2.API.Controllers
                 SecurityStamp = Guid.NewGuid().ToString(),
                 
                 // RegisterDto'ndaki diğer tüm alanlar
-               // TcNo = registerDto.TcNo,
                 Name = registerDto.Name,
                 Surname = registerDto.Surname,
                 BirthDate = registerDto.BirthDate,
                 PhoneNumber = registerDto.PhoneNumber,
                 RegistrationDate = DateTime.Now,
-                AccountStatus = "Beklemede"
                 
+                // DÜZELTME 1: AccountStatus veritabanında string olduğu için tırnak içinde yazıldı.
+                AccountStatus = "true" // veya "Beklemede" veya "Aktif"
             };
 
             var result = await _userManager.CreateAsync(newUser, registerDto.Password);
@@ -70,7 +70,8 @@ namespace MeetUpHubV2.API.Controllers
             {
                 var authClaims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.UserName), // Token'a kullanıcı adı olarak (ki bu email) ekle
+                    // DÜZELTME 2: Olası null değerler için önlem alındı (?? "")
+                    new Claim(ClaimTypes.Name, user.UserName ?? ""), 
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
@@ -83,13 +84,17 @@ namespace MeetUpHubV2.API.Controllers
                     expiration = token.ValidTo
                 });
             }
-            // Hata mesajını düzeltiyoruz
+            
             return Unauthorized("Email veya şifre hatalı.");
         }
         
         private JwtSecurityToken GenerateJwtToken(List<Claim> authClaims)
         {
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var secretKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key yapılandırması eksik!");
+            
+            // DÜZELTME 3: 'key' değişkeni 'authSigningKey' olarak değiştirildi
+            // Böylece aşağıdaki SigningCredentials bu değişkeni bulabilecek.
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],

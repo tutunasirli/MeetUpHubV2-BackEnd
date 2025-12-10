@@ -1,6 +1,6 @@
 ﻿using MeetUpHubV2.Entities.Enums;
 using System;
-using System.Collections.Generic; // ICollection için eklendi
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,23 +8,29 @@ namespace MeetUpHubV2.Entities
 {
     public class Room
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        
-        public RoomCategory Category { get; set; }
-        
-        public DateTime Date { get; set; } // <<< HATA (CS0117) BUNUN EKSİK OLDUĞUNU SÖYLÜYOR
-        
-        public TimeSlot TimeSlot { get; set; } // <<< HATA (CS0117) BUNUN EKSİK OLDUĞUNU SÖYLÜYOR
-        
-        public int Capacity { get; set; } // <<< HATA (CS0117 & CS1061) BUNUN EKSİK OLDUĞUNU SÖYLÜYOR
-        
-        public bool IsFull { get; set; } = false; // <<< HATA (CS0117 & CS1061) BUNUN EKSİK OLDUĞUNU SÖYLÜYOR
-        
-        public DateTime? StartTime { get; set; } // <<< HATA (CS0117) BUNUN EKSİK OLDUĞUNU SÖYLÜYOR
 
-        // Navigation property (İlişki)
-        // <<< HATA (CS1061) BUNUN EKSİK OLDUĞUNU SÖYLÜYOR
-        public virtual ICollection<UserRoom> UserRooms { get; set; }
+        // Aktivite kategorisi
+        public RoomCategory Category { get; set; }
+
+        // Kullanıcıların seçtiği tarih (zorunlu)
+        public DateTime SelectedDate { get; set; }
+
+        // Sabah / Öğle / Akşam
+        public TimeSlot TimeSlot { get; set; }
+
+        // Oda kapasitesi
+        public int Capacity { get; set; }
+
+        // Doluluk bilgisi (isteğe bağlı, repository zaten kontrol ediyor)
+        public bool IsFull { get; set; } = false;
+
+        // Etkinlik başlangıç saati (opsiyonel)
+        public DateTime? StartTime { get; set; }
+
+        // Navigation property
+        public virtual ICollection<UserRoom> UserRooms { get; set; } = new List<UserRoom>();
     }
 }

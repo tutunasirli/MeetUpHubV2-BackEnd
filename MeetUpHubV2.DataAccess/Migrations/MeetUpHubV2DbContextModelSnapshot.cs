@@ -96,11 +96,11 @@ namespace MeetUpHubV2.DataAccess.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsFull")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("SelectedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("TEXT");

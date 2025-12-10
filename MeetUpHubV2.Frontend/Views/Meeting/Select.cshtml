@@ -187,182 +187,202 @@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 
     <script>
-$(document).ready(function () {
+        $(document).ready(function () {
+            console.log("🚀 Select.cshtml yüklendi. Script çalışıyor.");
 
-    var today = new Date("@today.ToString("yyyy-MM-dd")" + "T00:00:00Z");
+            // --- C#'dan JS'e Veri Aktarımı ---
+            var today = new Date("@today.ToString("yyyy-MM-dd")" + "T00:00:00Z");
+            
+            // <<< YENİ: Kategori değerini doğrudan alıyoruz (Garanti olsun) >>>
+            const currentCategoryValue = @((int)categoryEnum);
 
-    const timeSlotStartHours = {
-        @( ((int)TimeSlot.Morning).ToString() ): 9,
-        @( ((int)TimeSlot.Afternoon).ToString() ): 13,
-        @( ((int)TimeSlot.Evening).ToString() ): 16,
-        @( ((int)TimeSlot.Night).ToString() ): 19
-    };
+            const timeSlotStartHours = {
+                @( ((int)TimeSlot.Morning).ToString() ): 8,
+                @( ((int)TimeSlot.Afternoon).ToString() ): 13,
+                @( ((int)TimeSlot.Evening).ToString() ): 16,
+                @( ((int)TimeSlot.Night).ToString() ): 19
+            };
 
-    const $joinButton = $('#joinButton');
-    const $selectionAlert = $('#selectionAlert');
+            // --- Elementler ---
+            const $joinButton = $('#joinButton');
+            const $selectionAlert = $('#selectionAlert');
+            const $timeSlotInput = $('#TimeSlot');
+            const $capacityInput = $('#Capacity');
+            const $cityInput = $('#City');
+            const $selectedDateInput = $('#SelectedDate');
 
-    const $categoryInput = $('input[name="Category"]');
-    const $timeSlotInput = $('#TimeSlot');
-    const $capacityInput = $('#Capacity');
-    const $cityInput = $('#City');
-    const $selectedDateInput = $('#SelectedDate');
+            // --- KART SEÇİM VE VALIDASYON ---
+            $('.selectable-card').on('click', function () {
+                if ($(this).hasClass('disabled')) return;
+                
+                var cardTypeClass = '';
+                if ($(this).hasClass('date-card')) cardTypeClass = '.date-card';
+                else if ($(this).hasClass('time-slot')) cardTypeClass = '.time-slot';
+                else if ($(this).hasClass('group-size')) cardTypeClass = '.group-size';
 
-    const categoryMap = {
-        "Coffee": 1,
-        "Dessert": 2,
-        "Food": 3,
-        "CoffeeAndDessert": 4
-    };
+                $(this).closest('.card-body').find('.selectable-card' + cardTypeClass).removeClass('border-danger border-2 shadow');
+                $(this).addClass('border-danger border-2 shadow');
 
-    $categoryInput.val(categoryMap[$categoryInput.val()] || 1);
+                var targetInput = $(this).data('target-input');
+                var value = $(this).data('value');
+                $(targetInput).val(value).trigger('change');
 
-    $('.selectable-card').on('click', function () {
-        var $this = $(this);
-        if ($this.hasClass('disabled')) return;
+                console.log(`✅ Seçim Yapıldı: ${targetInput} = ${value}`);
 
-        var targetInputSelector = $this.data('target-input');
-        var value = $this.data('value');
-
-        var cardTypeClass = '';
-        if ($this.hasClass('date-card')) cardTypeClass = '.date-card';
-        else if ($this.hasClass('time-slot')) cardTypeClass = '.time-slot';
-        else if ($this.hasClass('group-size')) cardTypeClass = '.group-size';
-
-        $this.closest('.card-body').find('.selectable-card' + cardTypeClass + ':not(.disabled)')
-            .removeClass('border-danger border-2 shadow');
-
-        $this.addClass('border-danger border-2 shadow');
-        $(targetInputSelector).val(value).trigger('change');
-
-        if ($this.hasClass('date-card')) {
-            updateAvailableTimeSlots();
-        }
-    });
-
-    $('#citySelect').on('change', function() {
-        $('#City').val($(this).val()).trigger('change');
-    });
-
-    function checkSelections() {
-        var timeSlotSelected = $timeSlotInput.val() != null && $timeSlotInput.val() !== '';
-        var capacitySelected = $capacityInput.val() != null && $capacityInput.val() !== '';
-        var citySelected = $cityInput.val() != null && $cityInput.val() !== '';
-        var dateSelected = $selectedDateInput.val() != null && $selectedDateInput.val() !== '';
-
-        var allSelected = timeSlotSelected && capacitySelected && citySelected && dateSelected;
-
-        var alertText = "Lütfen ";
-        var missing = [];
-        if (!dateSelected) missing.push("tarihi");
-        if (!timeSlotSelected) missing.push("buluşma zamanını");
-        if (!capacitySelected) missing.push("grup büyüklüğünü");
-        if (!citySelected) missing.push("şehri");
-        alertText += missing.join(", ") + " seçiniz.";
-        $selectionAlert.text(alertText);
-
-        if (allSelected) {
-            $joinButton.removeClass('disabled').prop('disabled', false);
-            $selectionAlert.addClass('d-none');
-        } else {
-            $joinButton.addClass('disabled').prop('disabled', true);
-            $selectionAlert.removeClass('d-none'); 
-        }
-    }
-
-    function updateAvailableTimeSlots() {
-        var selectedDateStr = $selectedDateInput.val();
-        if (!selectedDateStr) {
-            $('.selectable-card.time-slot').addClass('disabled bg-light text-muted pe-none')
-                                           .removeClass('border-danger border-2 shadow cursor-pointer');
-            $timeSlotInput.val('').trigger('change');
-            return;
-        }
-
-        var selectedDate = new Date(selectedDateStr + "T00:00:00Z");
-        var isToday = selectedDate.toDateString() === today.toDateString();
-        var currentHour = isToday ? (new Date()).getHours() : -1;
-
-        $('.selectable-card.time-slot').each(function() {
-            var $card = $(this);
-            var slotValue = parseInt($card.data('value'));
-            var slotStartHour = timeSlotStartHours[slotValue];
-
-            if (isToday && slotStartHour <= currentHour) { 
-                $card.addClass('disabled bg-light text-muted pe-none')
-                     .removeClass('border-danger border-2 shadow cursor-pointer');
-                if ($timeSlotInput.val() == slotValue) {
-                    $timeSlotInput.val('').trigger('change');
-                }
-            } else {
-                $card.removeClass('disabled bg-light text-muted pe-none')
-                     .addClass('cursor-pointer');
-            }
-        });
-        checkSelections();
-    }
-
-    $('#TimeSlot, #Capacity, #City, #SelectedDate').on('change', checkSelections);
-    updateAvailableTimeSlots();
-
-    function showAlert(message) {
-        $selectionAlert.text(message).removeClass('d-none');
-    }
-
-    $joinButton.on('click', async function(event) {
-        var $this = $(this);
-        $this.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Katılıyor...');
-
-        const token = localStorage.getItem("jwt_token");
-
-        if (!token) {
-            showAlert("Oturumunuz zaman aşımına uğramış. Lütfen tekrar giriş yapın.");
-            $this.html('Etkinliğe Katıl');
-            checkSelections(); 
-            return;
-        }
-
-        const joinRequest = {
-            Category: parseInt($categoryInput.val()), 
-            TimeSlot: parseInt($timeSlotInput.val()),
-            Capacity: parseInt($capacityInput.val()),
-            SelectedDate: $selectedDateInput.val() + "T00:00:00Z" 
-        };
-
-        try {
-            const response = await fetch('http://localhost:5292/api/matching/join', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify(joinRequest)
+                if ($(this).hasClass('date-card')) updateAvailableTimeSlots();
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Join response:", data); // Debug
-                if (data.success && data.room) {
-                    // DÜZELTME: 'Id' büyük harf
-                    window.location.href = `/Meeting/WaitingRoom?roomId=${data.room.id}`;
+            $('#citySelect').on('change', function() {
+                $('#City').val($(this).val()).trigger('change');
+                console.log(`✅ Şehir Seçildi: ${$(this).val()}`);
+            });
+
+            function checkSelections() {
+                if (allSelected()) {
+                    $joinButton.removeClass('disabled').prop('disabled', false);
+                    $selectionAlert.addClass('d-none');
                 } else {
-                    showAlert(data.message || "Odaya katılırken bir sorun oluştu.");
+                    $joinButton.addClass('disabled').prop('disabled', true);
                 }
-            } else {
-                const errorData = await response.json();
-                showAlert(errorData.message || `Sunucu hatası: ${response.status}`);
+            }
+            
+            function allSelected() {
+                 return $timeSlotInput.val() && $capacityInput.val() && $cityInput.val() && $selectedDateInput.val();
             }
 
-        } catch (error) {
-            showAlert(`Bağlantı hatası: ${error.message}`);
-        }
+            function updateAvailableTimeSlots() {
+                var selectedDateStr = $selectedDateInput.val();
+                if (!selectedDateStr) return;
 
-        $this.html('Etkinliğe Katıl');
-        checkSelections();
-    });
-});
+                var selectedDate = new Date(selectedDateStr + "T00:00:00Z");
+                var isToday = selectedDate.toDateString() === today.toDateString();
+                var currentHour = isToday ? (new Date()).getHours() : -1;
+
+                $('.selectable-card.time-slot').each(function () {
+                    var slotValue = parseInt($(this).data('value'));
+                    var slotStartHour = timeSlotStartHours[slotValue];
+
+                    if (isToday && slotStartHour <= currentHour) {
+                        $(this).addClass('disabled bg-light text-muted pe-none').removeClass('border-danger border-2 shadow cursor-pointer');
+                        if ($timeSlotInput.val() == slotValue) $timeSlotInput.val('').trigger('change');
+                    } else {
+                        $(this).removeClass('disabled bg-light text-muted pe-none').addClass('cursor-pointer');
+                    }
+                });
+                checkSelections();
+            }
+
+            $('#TimeSlot, #Capacity, #City, #SelectedDate').on('change', checkSelections);
+            updateAvailableTimeSlots();
+
+            // ============================================================
+            // 🔥 BUTON TIKLAMA (DÜZELTİLMİŞ VERSİYON)
+            // ============================================================
+            
+            function showAlert(message) {
+                $selectionAlert.text(message).removeClass('d-none');
+                console.warn("⚠️ Uyarı Gösterildi:", message);
+            }
+
+            $joinButton.on('click', async function (event) {
+                console.log("🖱️ BUTONA TIKLANDI! İşlem başlıyor...");
+                event.preventDefault();
+
+                var $this = $(this);
+                $this.prop('disabled', true).html('Katılıyor...');
+
+                const token = localStorage.getItem("jwt_token");
+                console.log("🔑 Token Durumu:", token ? "Mevcut (Uzunluk: " + token.length + ")" : "YOK!");
+
+                if (!token) {
+                    showAlert("HATA: Token bulunamadı! Lütfen tekrar giriş yapın.");
+                    $this.prop('disabled', false).html('Etkinliğe Katıl');
+                    return;
+                }
+
+                // <<< --- DÜZELTME BURADA --- >>>
+                // Input değerini okumak yerine, doğrudan C# değişkenini kullanıyoruz.
+                const joinRequest = {
+                    Category: currentCategoryValue, // <<< KESİN ÇÖZÜM
+                    TimeSlot: parseInt($timeSlotInput.val()),
+                    Capacity: parseInt($capacityInput.val()),
+                    SelectedDate: $selectedDateInput.val() + "T00:00:00Z"
+                };
+
+                console.log("📦 API'ye Gönderilecek Veri:", JSON.stringify(joinRequest));
+
+                try {
+                    console.log("📡 İstek gönderiliyor: http://localhost:5292/api/matching/join");
+                    
+                    const response = await fetch('http://localhost:5292/api/matching/join', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(joinRequest)
+                    });
+
+                    console.log("📩 API Yanıt Statüsü:", response.status);
+
+                    
+                    if (response.ok) {
+    const data = await response.json();
+    console.log("🔥 API Yanıt Body:", data);
+
+    // 1. Durum: API { success: true, room: {...} } döndürürse (RoomResponseDto)
+    const isSuccessWrapper = data.success || data.Success;
+    
+    // 2. Durum: API doğrudan Room objesi { id: 15, ... } döndürürse
+    // (Senin şu anki durumun bu)
+    const isDirectRoom = data.id || data.Id;
+
+    if (isSuccessWrapper) {
+        // Wrapper varsa, içindeki room verisini al
+        const roomData = data.room || data.Room;
+        const roomId = roomData.id || roomData.Id;
+        console.log(`✅ Başarılı (Wrapper)! Oda ID: ${roomId}. Yönlendiriliyor...`);
+        window.location.href = `/Meeting/WaitingRoom?roomId=${roomId}`;
+    } 
+    else if (isDirectRoom) {
+        // Wrapper yoksa, gelen datayı room olarak kabul et
+        const roomId = data.id || data.Id;
+        console.log(`✅ Başarılı (Direkt)! Oda ID: ${roomId}. Yönlendiriliyor...`);
+        window.location.href = `/Meeting/WaitingRoom?roomId=${roomId}`;
+    } 
+    else {
+        // Başarısız (Hata mesajı var mı?)
+        showAlert(data.message || data.Message || "Odaya katılırken bir sorun oluştu.");
+    }
+} else {
+                        const errorText = await response.text();
+                        console.error("❌ API Hatası (Raw):", errorText);
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            showAlert(errorJson.message || errorJson.title || `Hata: ${response.status}`);
+                        } catch {
+                            showAlert(`Sunucu Hatası: ${response.status}`);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('❌ FETCH (AĞ) HATASI:', error);
+                    showAlert(`Bağlantı hatası: ${error.message}`);
+                }
+
+                if (window.location.href.indexOf("WaitingRoom") === -1) {
+                    $this.prop('disabled', false).html('Etkinliğe Katıl');
+                }
+            });
+            
+            $joinButton.hover(
+                function() { if(!$(this).hasClass('disabled')) $(this).addClass('shadow-lg'); },
+                function() { $(this).removeClass('shadow-lg'); }
+            );
+
+        }); 
     </script>
 }
-
 
 <style>
     .cursor-pointer { cursor: pointer; }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MeetUpHubV2.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialSqliteSetup : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,6 +33,7 @@ namespace MeetUpHubV2.DataAccess.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Category = table.Column<int>(type: "INTEGER", nullable: false),
+                    SelectedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     TimeSlot = table.Column<int>(type: "INTEGER", nullable: false),
                     Capacity = table.Column<int>(type: "INTEGER", nullable: false),
                     IsFull = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -112,7 +113,6 @@ namespace MeetUpHubV2.DataAccess.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    TcNo = table.Column<string>(type: "TEXT", maxLength: 11, nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Surname = table.Column<string>(type: "TEXT", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "TEXT", nullable: false),

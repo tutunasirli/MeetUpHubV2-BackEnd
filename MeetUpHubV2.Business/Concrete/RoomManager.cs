@@ -42,15 +42,15 @@ namespace MeetUpHubV2.Business.Concrete
             _eventService = eventService;
         }
 
-        private string GetCacheKey(string roomId) => $"voting_session_{roomId}";
+        private string GetCacheKey(int roomId) => $"voting_session_{roomId}";
 
-        // IRoomService Metodu 1: (RoomResponseDto döndürür)
         public async Task<RoomResponseDto> AddUserToAppropriateRoom(int userId, RoomCategory category, TimeSlot timeSlot, int roomCapacity, DateTime selectedDate)
         {
             _logger.LogInformation("[RoomManager] AddUserToAppropriateRoom started for User:{UserId}, Category:{Category}", userId, category);
             try
             {
-                bool isUserInTimeSlot = await _roomRepository.IsUserInTimeSlot(userId, timeSlot);
+                bool isUserInTimeSlot = await _roomRepository.IsUserInTimeSlot(userId, timeSlot, selectedDate);
+
                 if (isUserInTimeSlot)
                 {
                     _logger.LogWarning("[RoomManager] User:{UserId} is already in another room for TimeSlot:{TimeSlot}", userId, timeSlot);
@@ -87,6 +87,8 @@ namespace MeetUpHubV2.Business.Concrete
                 try
                 {
                     bool roomIsNowFull = await _roomRepository.IsRoomFull(joinedOrCreatedRoom.Id);
+                    joinedOrCreatedRoom.IsFull = roomIsNowFull; // 🔥 DÜZELTİLDİ
+
                     _logger.LogInformation("[RoomManager] IsRoomFull check after adding user for Room:{RoomId}: {Result}", joinedOrCreatedRoom.Id, roomIsNowFull);
 
                     if (roomIsNowFull)
@@ -120,14 +122,12 @@ namespace MeetUpHubV2.Business.Concrete
                 }
 
                 _logger.LogInformation("[RoomManager] AddUserToAppropriateRoom finished successfully for User:{UserId}, Room:{RoomId}", userId, joinedOrCreatedRoom.Id);
-                
-                // <<< --- DÖNÜŞÜM HATASI (CS0029) BURADA DÜZELTİLDİ --- >>>
-                // Frontend'in beklediği 'RoomResponseDto' döndürülüyor
+
                 return new RoomResponseDto
                 {
                     Success = true,
                     Message = isNewRoom ? "Yeni oda oluşturuldu ve katıldınız." : "Mevcut odaya başarıyla katıldınız.",
-                    Room = new RoomDto // Entity (Room) -> DTO (RoomDto)
+                    Room = new RoomDto
                     {
                         Id = joinedOrCreatedRoom.Id,
                         Category = joinedOrCreatedRoom.Category,
@@ -145,8 +145,7 @@ namespace MeetUpHubV2.Business.Concrete
                 return new RoomResponseDto { Success = false, Message = $"Odaya katılırken beklenmedik bir hata oluştu: {ex.Message}" };
             }
         }
-        
-        // IRoomService Metodu 2
+
         public async Task<RoomDto?> GetRoomById(int roomId)
         {
             _logger.LogInformation("[RoomManager] Getting room by ID:{RoomId}", roomId);
@@ -157,7 +156,6 @@ namespace MeetUpHubV2.Business.Concrete
                 return null;
             }
 
-            // Entity (Room) -> DTO (RoomDto)
             return new RoomDto
             {
                 Id = room.Id,
@@ -170,7 +168,6 @@ namespace MeetUpHubV2.Business.Concrete
             };
         }
 
-        // IRoomService Metodu 3
         public async Task<List<RoomDto>> GetAllRooms()
         {
             _logger.LogInformation("[RoomManager] Getting all rooms.");
@@ -191,7 +188,6 @@ namespace MeetUpHubV2.Business.Concrete
             return roomDtos;
         }
 
-        // IRoomService Metodu 4
         public async Task RemoveUserFromRoom(int userId, int roomId)
         {
             _logger.LogInformation("[RoomManager] Removing User:{UserId} from Room:{RoomId}", userId, roomId);
@@ -203,7 +199,6 @@ namespace MeetUpHubV2.Business.Concrete
             await _roomRepository.UpdateRoom(roomId);
         }
 
-        // IRoomService Metodu 5
         public async Task DeleteRoom(int roomId)
         {
             _logger.LogInformation("[RoomManager] Deleting Room:{RoomId}", roomId);
@@ -213,8 +208,7 @@ namespace MeetUpHubV2.Business.Concrete
                 await _roomRepository.DeleteRoom(room);
             }
         }
-        
-        // --- Oylama Zamanlayıcısı (Özel Metot) ---
+
         private async Task StartVotingTimer(int intRoomId, string stringRoomId)
         {
             try
@@ -222,7 +216,7 @@ namespace MeetUpHubV2.Business.Concrete
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 _logger.LogInformation("[RoomManager][Timer] 30 seconds finished for Room:{RoomId}", stringRoomId);
 
-                var session = _cache.Get<VotingSession>(GetCacheKey(stringRoomId));
+                var session = _cache.Get<VotingSession>(GetCacheKey(intRoomId)); // 🔥 DÜZELTİLDİ
                 if (session == null)
                 {
                     _logger.LogWarning("[RoomManager][Timer] Voting session not found in cache for Room:{RoomId}.", stringRoomId);
@@ -260,19 +254,18 @@ namespace MeetUpHubV2.Business.Concrete
                 _logger.LogInformation("[RoomManager][Timer] New event creation request sent for Room:{RoomId}", stringRoomId);
                 
                 await _notificationService.SendVotingFinishedAsync(stringRoomId, newEventDto);
-                _cache.Remove(GetCacheKey(stringRoomId));
+                _cache.Remove(GetCacheKey(intRoomId));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[RoomManager][Timer] Error in voting timer for Room:{RoomId}", stringRoomId);
             }
         }
-        
-        // --- Yardımcı Metotlar (TKey hataları (CS0019/CS0029) düzeltildi) ---
+
         private int DetermineWinner(ConcurrentDictionary<int, int> votes)
         {
             if (votes == null || votes.IsEmpty)
-                return 0; // int için 'default' 0'dır
+                return 0;
 
             var winner = votes.OrderByDescending(pair => pair.Value).FirstOrDefault();
             return winner.Key;
@@ -281,7 +274,7 @@ namespace MeetUpHubV2.Business.Concrete
         private string? DetermineWinner(ConcurrentDictionary<string, int> votes)
         {
             if (votes == null || votes.IsEmpty)
-                return null; // string için 'default' null'dır
+                return null;
 
             var winner = votes.OrderByDescending(pair => pair.Value).FirstOrDefault();
             return winner.Key;

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeetUpHubV2.DataAccess.Migrations
 {
     [DbContext(typeof(MeetUpHubV2DbContext))]
-    [Migration("20251023234356_AllowNullTcNo")]
-    partial class AllowNullTcNo
+    [Migration("20251210100954_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -101,6 +101,9 @@ namespace MeetUpHubV2.DataAccess.Migrations
 
                     b.Property<bool>("IsFull")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("SelectedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("TEXT");
