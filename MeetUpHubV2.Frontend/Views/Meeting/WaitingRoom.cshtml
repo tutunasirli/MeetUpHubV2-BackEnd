@@ -6,23 +6,26 @@
 <div class="container py-5 mt-5">
     <div class="row g-4">
 
-        @* SOL TARAF: ODA BİLGİLERİ VE KULLANICILAR *@
+        <!-- SOL TARAF - BEKLEME ODASI -->
         <div class="col-lg-7 col-md-6">
             <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-header bg-danger text-white">
                     <h4 class="mb-0">Etkinlik Bekleme Odası</h4>
                 </div>
+
                 <div class="card-body p-4">
                     <h5 class="card-title fw-bold text-dark">Etkinlik Şehri: @Model.CityName</h5>
+
                     <p class="card-text text-muted">
                         Kategori: @Model.CategoryDisplayName |
-                        Zaman Dilimi: @Model.TimeSlot |
-                        Kapasite: @Model.Capacity Kişi
+                        Zaman Dilimi: @Model.TimeSlotDisplay |
+                        Kapasite: @Model.CurrentUserCount / @Model.Capacity Kişi
                     </p>
 
                     <hr />
 
-                    @* --- YENİ SPINNER (EŞLEŞME BEKLENİYOR) --- *@
+                    <!-- BEKLEME MESAJI -->
                     <div id="waitingMessage" class="text-center p-4">
                         <div class="spinner-border text-danger" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -30,157 +33,200 @@
                         <h5 class="mt-3">Eşleşme bekleniyor...</h5>
                         <p class="text-muted">Oda dolduğunda oylama ekranına yönlendirileceksiniz.</p>
                     </div>
-                    @* --- YENİ SPINNER SONU --- *@
 
-
-                    @* ODA DOLU MESAJI (MatchFound ile gösterilecek) *@
+                    <!-- EŞLEŞME BULUNDU MESAJI -->
                     <div id="matchMessage" class="alert alert-success mt-4 d-none" role="alert">
                         Harika! Oda doldu, eşleşme tamamlandı. Oylama odasına yönlendiriliyorsunuz...
                     </div>
 
-
-                    @* ODADAN AYRIL BUTONU *@
+                    <!-- ODADAN AYRIL -->
                     <div class="d-grid mt-4">
                         <button id="leaveButton" class="btn btn-outline-danger">
                             <i class="fas fa-sign-out-alt me-2"></i> Odadan Ayrıl
                         </button>
                     </div>
                 </div>
+
             </div>
         </div>
 
-        @* SAĞ TARAF: ETKİNLİK KURALLARI (Aynı kaldı) *@
+
+
+
+        <!-- SAĞ TARAF - ETKİNLİK KURALLARI -->
         <div class="col-lg-5 col-md-6">
             <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-header bg-warning text-dark">
-                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Etkinlik Kuralları</h4>
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Etkinlik Kuralları
+                    </h4>
                 </div>
+
                 <div class="card-body p-4">
-                    <p class="text-muted">MeetUpHub'ı güvenli, saygılı ve eğlenceli bir platform haline getirmek için lütfen aşağıdaki kurallara uyunuz:</p>
+                    <p class="text-muted">
+                        MeetUpHub’ı güvenli, saygılı ve keyifli bir ortamda kullanmak için lütfen aşağıdaki kurallara dikkat ediniz:
+                    </p>
+
                     <ul class="list-unstyled">
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Diğer kullanıcılara karşı her zaman saygılı davranın.</li>
-                        @* ... (Diğer kurallar) ... *@
+
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Diğer katılımcılara karşı her zaman nazik ve saygılı olun.
+                        </li>
+
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Küfür, hakaret, nefret söylemi veya taciz içeren davranışlarda bulunmayın.
+                        </li>
+
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Gerçek ve doğru bilgiler paylaşmaya özen gösterin.
+                        </li>
+
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Spam yapmak, sohbeti sabote etmek veya kullanıcıları rahatsız etmek yasaktır.
+                        </li>
+
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Gizlilik önemlidir — kişisel bilgilerinizi paylaşırken dikkatli olun.
+                        </li>
+
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Güvenlik sorunlarını veya uygunsuz davranışları platform yöneticisine bildirin.
+                        </li>
+
                     </ul>
                 </div>
+
             </div>
         </div>
 
     </div>
 </div>
 
-@* <<< --- BÜTÜN @section Scripts BLOĞU YENİLENDİ --- >>> *@
+
+
+
 @section Scripts {
-    <script>
-        // Sayfa (DOM) tamamen yüklendiğinde bu fonksiyonu çalıştır
-        document.addEventListener("DOMContentLoaded", function() {
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-            console.log("Bekleme Odası yüklendi. SignalRManager başlatılıyor...");
-            
-            // Modelden oda ID'sini al
-            const roomId = "@Model.RoomId";
+    const roomId = "@Model.RoomId";
 
-            // 1. ADIM: JWT Token'ı Al
-            // ÖNEMLİ: "jwt_token" key'ini, senin login işleminden sonra
-            // token'ı kaydettiğin key ile değiştirmen gerekebilir.
-            const token = localStorage.getItem("jwt_token");
-            if (!token) {
-                console.error("SignalR Bağlantısı: Yetkilendirme token'ı (JWT) bulunamadı.");
-                alert("Oturumunuz zaman aşımına uğradı veya giriş yapmadınız. Lütfen tekrar giriş yapın.");
-                window.location.href = "/Account/Login"; // Token yoksa Login'e gönder
+    const token = localStorage.getItem("jwt_token") || localStorage.getItem("token");
+    if (!token) {
+        alert("Oturumunuz sona ermiş olabilir. Lütfen tekrar giriş yapın.");
+        window.location.href = "/Account/Login";
+        return;
+    }
+
+    const apiBase = "http://localhost:5292";
+    const hubUrl = `${apiBase}/roomhub`;
+
+    // ===============================
+    // 🔹 ODA BİLGİSİNİ YÜKLE
+    // ===============================
+    async function loadRoomInfo() {
+        try {
+            const res = await fetch(`${apiBase}/api/rooms/${roomId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                console.error("Room bilgisi alınamadı");
                 return;
             }
 
-            // 2. ADIM: SignalR Bağlantısını Kur (Token ile)
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("http://localhost:5000/roomhub", { // Backend Hub adresi
-                    accessTokenFactory: () => token // Yetkilendirme [Authorize] için
-                })
-                .withAutomaticReconnect()
-                .configureLogging(signalR.LogLevel.Information)
-                .build();
+            const room = await res.json();
 
-            // 3. ADIM: "Eşleşme Bulundu" olayını dinle (f.png -> f3.png)
-            // Backend (RoomManager), oda dolduğunda buraya "MatchFound" gönderir.
-            connection.on("MatchFound", function (data) {
-                
-                console.log("GERİ SAYIM BAŞLADI! Eşleşme bulundu, data:", data);
-                // data objesi: { roomId: "...", options: { venues: [...], timeSlots: [...] } }
+            document.querySelector(".card-title").innerText =
+                "Etkinlik Şehri: " + room.city;
 
-                // Başarı mesajını göster
-                $('#waitingMessage').hide(); // "Bekleniyor" spinner'ını gizle
-                $('#matchMessage').removeClass('d-none'); // "Başarılı" mesajını göster
-                $('#leaveButton').prop('disabled', true).addClass('disabled'); // Ayrıl butonunu kilitle
+            document.querySelector(".card-text").innerText =
+                `Kategori: ${room.category} | Zaman Dilimi: ${room.timeSlot} | Kapasite: ${room.userIds.length} / ${room.capacity}`;
 
-                // 4. ADIM: Oylama bilgilerini tarayıcıya kaydet
-                // Bu bilgileri bir sonraki sayfada (VotingRoom.cshtml) kullanacağız
-                sessionStorage.setItem("votingRoomId", data.roomId);
-                sessionStorage.setItem("votingOptions", JSON.stringify(data.options));
-
-                // 5. ADIM: Oylama sayfasına (f3.png) 2 saniye sonra yönlendir
-                setTimeout(function() {
-                    // ÖNEMLİ: Bu URL'i, Oylama sayfanızın
-                    // (örn: /Matching/Vote veya /Voting/Index) doğru yoluyla değiştirin.
-                    window.location.href = "/Matching/VotingRoom"; 
-                }, 2000); // 2 saniye bekle
-            });
-
-            // 6. ADIM: Bağlantıyı Başlat
-            async function startSignalR() {
-                try {
-                    await connection.start();
-                    console.log("SignalR Connected.");
-                    
-                    // Bağlantı kurulunca backend'e 2 önemli mesaj gönder:
-                    
-                    // 1. Oylama odası grubuna katıl (Bu odadaki oyları almak için)
-                    await connection.invoke("JoinRoomGroup", roomId.toString());
-                    console.log(`Joined room group: ${roomId}`);
-
-                    // 2. Kişisel kullanıcı grubuna katıl (Backend'in bana 'MatchFound' gönderebilmesi için)
-                    await connection.invoke("RegisterUserConnection");
-                    console.log("Kullanıcı kişisel bağlantı için kaydedildi.");
-
-                } catch (err) {
-                    console.error("SignalR Connection Error: ", err);
-                    setTimeout(startSignalR, 5000); // 5 saniye sonra tekrar dene
-                }
+            if (room.isFull) {
+                document.getElementById("waitingMessage").style.display = "none";
+                document.getElementById("matchMessage").classList.remove("d-none");
             }
-            
-            // Bağlantıyı başlat
-            startSignalR();
 
+        } catch (err) {
+            console.error("loadRoomInfo error:", err);
+        }
+    }
 
-            // 7. ADIM: Odadan Ayrıl Butonu (Düzeltildi: Token eklendi)
-            $('#leaveButton').on('click', async function() {
-                $(this).prop('disabled', true).addClass('disabled').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Ayrılıyor...');
+    // 👉 SAYFA AÇILINCA ÇAĞIR
+    loadRoomInfo();
 
-                try {
-                    // Backend API'deki [Authorize]'i geçmek için token'ı ekliyoruz
-                    const response = await fetch('/api/matching/leave', { // API'nin yolunu kontrol et
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}` // <<<=== YETKİ İÇİN BU GEREKLİ
-                        },
-                        body: JSON.stringify({ roomId: parseInt(roomId) })
-                    });
+    // ===============================
+    // 🔹 SIGNALR
+    // ===============================
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl(hubUrl, { accessTokenFactory: () => token })
+        .withAutomaticReconnect([0, 2000, 5000, 10000])
+        .build();
 
-                    if (response.ok) {
-                        window.location.href = '/'; // Anasayfaya yönlendir
-                    } else {
-                        const errorData = await response.json();
-                        alert(`Odadan ayrılamadı: ${errorData.message || response.statusText}`);
-                        $(this).prop('disabled', false).removeClass('disabled').html('<i class="fas fa-sign-out-alt me-2"></i> Odadan Ayrıl');
-                    }
-                } catch (error) {
-                    alert(`Bir hata oluştu: ${error.message}`);
-                    $(this).prop('disabled', false).removeClass('disabled').html('<i class="fas fa-sign-out-alt me-2"></i> Odadan Ayrıl');
-                } finally {
-                    // Bağlantıyı kapat
-                    try { await connection.stop(); } catch {}
-                }
+    connection.on("MatchFound", function (data) {
+        document.getElementById("waitingMessage").style.display = "none";
+        document.getElementById("matchMessage").classList.remove("d-none");
+
+        sessionStorage.setItem("votingRoomId", data.roomId);
+        sessionStorage.setItem("votingOptions", JSON.stringify(data.options));
+
+        setTimeout(() => {
+            window.location.href = "/Matching/VotingRoom";
+        }, 1500);
+    });
+
+    async function startSignalR() {
+        try {
+            await connection.start();
+            await connection.invoke("JoinRoomGroup", parseInt(roomId));
+            await connection.invoke("RegisterUserConnection");
+        } catch (err) {
+            console.error("SignalR error:", err);
+            setTimeout(startSignalR, 3000);
+        }
+    }
+
+    startSignalR();
+
+    // ===============================
+    // 🔹 ODADAN AYRIL
+    // ===============================
+    document.getElementById("leaveButton").addEventListener("click", async function () {
+
+        try {
+            const res = await fetch(`${apiBase}/api/matching/leave`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ roomId: parseInt(roomId) })
             });
 
-        }); // document ready sonu
-    </script>
+            if (res.ok) {
+                await connection.stop();
+                window.location.href = "/";
+            } else {
+                alert("Odadan ayrılamadı");
+            }
+        } catch (err) {
+            alert("Hata: " + err.message);
+        }
+    });
+
+});
+</script>
 }
+
+
+

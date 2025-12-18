@@ -1,16 +1,15 @@
 ﻿using MeetUpHubV2.Business.Abstract;
 using MeetUpHubV2.Entities.Dtos.RoomDtos;
-using Microsoft.AspNetCore.Authorization; // <<<=== EKLENDİ
+using MeetUpHubV2.Entities.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System; // Exception için eklendi
-using System.Threading.Tasks; // Task için eklendi
+using System;
+using System.Threading.Tasks;
 
-namespace MeetUpHubV2.API.Controllers
+namespace MeetUpHubV2.WebAPI.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    // [Authorize] // <<<=== İstersen tüm controller'ı koruyabilirsin ya da sadece metotları
-    public class RoomController : Controller
+    [ApiController]
+    public class RoomController : ControllerBase
     {
         private readonly IRoomService _roomService;
 
@@ -19,63 +18,57 @@ namespace MeetUpHubV2.API.Controllers
             _roomService = roomService;
         }
 
-        
-
-        // Bu metot MatchingController tarafından devralındı, belki kaldırılabilir?
-        [HttpDelete("removeUser")] // POST yerine DELETE daha uygun olabilir
-        [Authorize] // <<<=== Yetkilendirme eklendi (varsa)
-        public async Task<IActionResult> RemoveUserFromRoom([FromBody] RemoveUserFromRoomRequest request)
+        // === KULLANICININ ODAYA GİRMESİ ===
+        [HttpPost("join")]
+        public async Task<IActionResult> JoinRoom(
+            int userId,
+            [FromBody] JoinRoomRequestDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var result = await _roomService.AddUserToAppropriateRoom(
+                userId,
+                request.Category,
+                request.TimeSlot,
+                request.Capacity,
+                request.City,
+                request.SelectedDate
+            );
 
-            try
-            {
-                await _roomService.RemoveUserFromRoom(request.UserId, request.RoomId);
-                return Ok(new { message = "User removed from room." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(result);
         }
 
-        // --- BU METOT WAITINGROOM İÇİN KULLANILACAK ---
+        // === ODA DETAY ===
         [HttpGet("{roomId}")]
-        [Authorize] // <<<=== YETKİLENDİRME EKLENDİ
-        public async Task<IActionResult> GetRoom(int roomId)
+        public async Task<IActionResult> GetRoomById(int roomId)
         {
             var room = await _roomService.GetRoomById(roomId);
             if (room == null)
-                return NotFound(new { message = "Oda bulunamadı."}); // Daha açıklayıcı mesaj
+                return NotFound("Oda bulunamadı.");
 
-            return Ok(room); // RoomDto dönüyor
+            return Ok(room);
         }
-        // --- METODUN SONU ---
 
+        // === TÜM ODALAR ===
+        [HttpGet]
+        public async Task<IActionResult> GetAllRooms()
+        {
+            var rooms = await _roomService.GetAllRooms();
+            return Ok(rooms);
+        }
+
+        // === ODAYI SİL ===
         [HttpDelete("{roomId}")]
-        [Authorize] // <<<=== Yetkilendirme eklendi (Örn: Sadece admin silebilir?)
         public async Task<IActionResult> DeleteRoom(int roomId)
         {
-            try
-            {
-                await _roomService.DeleteRoom(roomId);
-                return Ok(new { message = "Oda başarıyla silindi." }); // Başarı mesajı güncellendi
-            }
-            catch (Exception ex)
-            {
-                // Silinecek oda bulunamadıysa NotFound dönmek daha iyi olabilir
-                 if (ex.Message.Contains("bulunamadı")) // Basit kontrol
-                 {
-                     return NotFound(new { message = ex.Message });
-                 }
-                return BadRequest(new { message = ex.Message });
-            }
+            await _roomService.DeleteRoom(roomId);
+            return Ok("Oda silindi.");
         }
-        
-        // TODO: Belki tüm odaları listeleyen bir endpoint eklenebilir?
-        // [HttpGet]
-        // [Authorize] 
-        // public async Task<IActionResult> GetAllRooms() { ... }
+
+        // === KULLANICI ÇIKAR ===
+        [HttpPost("leave")]
+        public async Task<IActionResult> LeaveRoom(int userId, int roomId)
+        {
+            await _roomService.RemoveUserFromRoom(userId, roomId);
+            return Ok("Kullanıcı odadan çıkarıldı.");
+        }
     }
 }

@@ -18,25 +18,40 @@ namespace MeetUpHubV2.DataAccess.Concrete
             _context = context;
         }
 
-        public async Task<Room?> GetAvailableRoom(RoomCategory category, TimeSlot timeSlot, int capacity, DateTime selectedDate)
-        {
-            return await _context.Rooms
-                .Include(r => r.UserRooms)
-                .FirstOrDefaultAsync(r =>
-                    r.Category == category &&
-                    r.TimeSlot == timeSlot &&
-                    r.Capacity == capacity &&
-                    r.SelectedDate.Date == selectedDate.Date &&
-                    r.UserRooms.Count < r.Capacity);
-        }
+        public async Task<Room?> GetAvailableRoom(
+    RoomCategory category,
+    TimeSlot timeSlot,
+    int capacity,
+    string city,
+    DateTime selectedDate)
+{
+    return await _context.Rooms
+        .Include(r => r.UserRooms)
+        .FirstOrDefaultAsync(r =>
+            r.Category == category &&
+            r.TimeSlot == timeSlot &&
+            r.Capacity == capacity &&      
+            r.City == city &&
+            r.SelectedDate.Date == selectedDate.Date &&
+            !r.IsFull &&
+            r.UserRooms.Count < r.Capacity
+        );
+}
 
-        public async Task<Room> CreateRoom(RoomCategory category, TimeSlot timeSlot, int capacity, DateTime selectedDate)
+
+        public async Task<Room> CreateRoom(
+            RoomCategory category,
+            TimeSlot timeSlot,
+            int capacity,
+            string city,
+            DateTime selectedDate)
         {
             var newRoom = new Room
             {
                 Category = category,
                 TimeSlot = timeSlot,
                 Capacity = capacity,
+                City = city,
                 SelectedDate = selectedDate.Date,
                 IsFull = false,
                 StartTime = DateTime.UtcNow

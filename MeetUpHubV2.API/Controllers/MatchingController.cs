@@ -39,6 +39,7 @@ namespace MeetUpHubV2.API.Controllers
                     requestDto.Category, 
                     requestDto.TimeSlot, 
                     requestDto.Capacity,
+                    requestDto.City, 
                     requestDto.SelectedDate); // <<<=== EKLENDİ
 
                 if (roomResponse.Success)

@@ -8,7 +8,7 @@ namespace MeetUpHubV2.Entities
         public string RoomId { get; set; }
 
         // Hata (CS1061) bunların eksik olduğunu söylüyordu
-        public ConcurrentDictionary<int, int> VenueVotes { get; private set; }
+         public ConcurrentDictionary<int, int> VenueVotes { get; private set; }
 
         // Hata (CS1061) bunların eksik olduğunu söylüyordu
         public ConcurrentDictionary<string, int> TimeVotes { get; private set; }

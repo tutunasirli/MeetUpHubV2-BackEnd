@@ -285,95 +285,88 @@
             }
 
             $joinButton.on('click', async function (event) {
-                console.log("🖱️ BUTONA TIKLANDI! İşlem başlıyor...");
-                event.preventDefault();
+    console.log("🖱️ BUTONA TIKLANDI! İşlem başlıyor...");
+    event.preventDefault();
 
-                var $this = $(this);
-                $this.prop('disabled', true).html('Katılıyor...');
+    var $this = $(this);
+    $this.prop('disabled', true).html('Katılıyor...');
 
-                const token = localStorage.getItem("jwt_token");
-                console.log("🔑 Token Durumu:", token ? "Mevcut (Uzunluk: " + token.length + ")" : "YOK!");
+    const token = localStorage.getItem("jwt_token");
+    console.log("🔑 Token Durumu:", token ? "Mevcut (Uzunluk: " + token.length + ")" : "YOK!");
 
-                if (!token) {
-                    showAlert("HATA: Token bulunamadı! Lütfen tekrar giriş yapın.");
-                    $this.prop('disabled', false).html('Etkinliğe Katıl');
-                    return;
-                }
-
-                // <<< --- DÜZELTME BURADA --- >>>
-                // Input değerini okumak yerine, doğrudan C# değişkenini kullanıyoruz.
-                const joinRequest = {
-                    Category: currentCategoryValue, // <<< KESİN ÇÖZÜM
-                    TimeSlot: parseInt($timeSlotInput.val()),
-                    Capacity: parseInt($capacityInput.val()),
-                    SelectedDate: $selectedDateInput.val() + "T00:00:00Z"
-                };
-
-                console.log("📦 API'ye Gönderilecek Veri:", JSON.stringify(joinRequest));
-
-                try {
-                    console.log("📡 İstek gönderiliyor: http://localhost:5292/api/matching/join");
-                    
-                    const response = await fetch('http://localhost:5292/api/matching/join', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(joinRequest)
-                    });
-
-                    console.log("📩 API Yanıt Statüsü:", response.status);
-
-                    
-                    if (response.ok) {
-    const data = await response.json();
-    console.log("🔥 API Yanıt Body:", data);
-
-    // 1. Durum: API { success: true, room: {...} } döndürürse (RoomResponseDto)
-    const isSuccessWrapper = data.success || data.Success;
-    
-    // 2. Durum: API doğrudan Room objesi { id: 15, ... } döndürürse
-    // (Senin şu anki durumun bu)
-    const isDirectRoom = data.id || data.Id;
-
-    if (isSuccessWrapper) {
-        // Wrapper varsa, içindeki room verisini al
-        const roomData = data.room || data.Room;
-        const roomId = roomData.id || roomData.Id;
-        console.log(`✅ Başarılı (Wrapper)! Oda ID: ${roomId}. Yönlendiriliyor...`);
-        window.location.href = `/Meeting/WaitingRoom?roomId=${roomId}`;
-    } 
-    else if (isDirectRoom) {
-        // Wrapper yoksa, gelen datayı room olarak kabul et
-        const roomId = data.id || data.Id;
-        console.log(`✅ Başarılı (Direkt)! Oda ID: ${roomId}. Yönlendiriliyor...`);
-        window.location.href = `/Meeting/WaitingRoom?roomId=${roomId}`;
-    } 
-    else {
-        // Başarısız (Hata mesajı var mı?)
-        showAlert(data.message || data.Message || "Odaya katılırken bir sorun oluştu.");
+    if (!token) {
+        showAlert("HATA: Token bulunamadı! Lütfen tekrar giriş yapın.");
+        $this.prop('disabled', false).html('Etkinliğe Katıl');
+        return;
     }
-} else {
-                        const errorText = await response.text();
-                        console.error("❌ API Hatası (Raw):", errorText);
-                        try {
-                            const errorJson = JSON.parse(errorText);
-                            showAlert(errorJson.message || errorJson.title || `Hata: ${response.status}`);
-                        } catch {
-                            showAlert(`Sunucu Hatası: ${response.status}`);
-                        }
-                    }
 
-                } catch (error) {
-                    console.error('❌ FETCH (AĞ) HATASI:', error);
-                    showAlert(`Bağlantı hatası: ${error.message}`);
-                }
+    // --- DÜZELTİLMİŞ: City EKLENDİ ---
+    const joinRequest = {
+        Category: currentCategoryValue, // C# tarafındaki kategori değeri
+        TimeSlot: parseInt($timeSlotInput.val()),
+        Capacity: parseInt($capacityInput.val()),
+        SelectedDate: $selectedDateInput.val() + "T00:00:00Z",
+        City: $cityInput.val() // <<< BURASI EKLENDİ
+    };
 
-                if (window.location.href.indexOf("WaitingRoom") === -1) {
-                    $this.prop('disabled', false).html('Etkinliğe Katıl');
-                }
-            });
+    console.log("📦 API'ye Gönderilecek Veri:", JSON.stringify(joinRequest));
+
+    try {
+        console.log("📡 İstek gönderiliyor: http://localhost:5292/api/matching/join");
+        
+        const response = await fetch('http://localhost:5292/api/matching/join', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(joinRequest)
+        });
+
+        console.log("📩 API Yanıt Statüsü:", response.status);
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log("🔥 API Yanıt Body:", data);
+
+            const isSuccessWrapper = data.success || data.Success;
+            const isDirectRoom = data.id || data.Id;
+
+            if (isSuccessWrapper) {
+                const roomData = data.room || data.Room;
+                const roomId = roomData.id || roomData.Id;
+                console.log(`✅ Başarılı (Wrapper)! Oda ID: ${roomId}. Yönlendiriliyor...`);
+                window.location.href = `/Meeting/WaitingRoom?roomId=${roomId}`;
+            } 
+            else if (isDirectRoom) {
+                const roomId = data.id || data.Id;
+                console.log(`✅ Başarılı (Direkt)! Oda ID: ${roomId}. Yönlendiriliyor...`);
+                window.location.href = `/Meeting/WaitingRoom?roomId=${roomId}`;
+            } 
+            else {
+                showAlert(data.message || data.Message || "Odaya katılırken bir sorun oluştu.");
+            }
+        } else {
+            const errorText = await response.text();
+            console.error("❌ API Hatası (Raw):", errorText);
+            try {
+                const errorJson = JSON.parse(errorText);
+                showAlert(errorJson.message || errorJson.title || `Hata: ${response.status}`);
+            } catch {
+                showAlert(`Sunucu Hatası: ${response.status}`);
+            }
+        }
+
+    } catch (error) {
+        console.error('❌ FETCH (AĞ) HATASI:', error);
+        showAlert(`Bağlantı hatası: ${error.message}`);
+    }
+
+    if (window.location.href.indexOf("WaitingRoom") === -1) {
+        $this.prop('disabled', false).html('Etkinliğe Katıl');
+    }
+});
+
             
             $joinButton.hover(
                 function() { if(!$(this).hasClass('disabled')) $(this).addClass('shadow-lg'); },

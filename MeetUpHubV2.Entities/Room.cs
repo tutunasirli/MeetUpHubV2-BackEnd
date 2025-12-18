@@ -15,6 +15,9 @@ namespace MeetUpHubV2.Entities
         // Aktivite kategorisi
         public RoomCategory Category { get; set; }
 
+  [Required]
+        public string City { get; set; }
+        
         // Kullanıcıların seçtiği tarih (zorunlu)
         public DateTime SelectedDate { get; set; }
 
