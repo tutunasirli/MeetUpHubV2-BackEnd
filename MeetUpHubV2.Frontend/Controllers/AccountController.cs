@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MeetUpHubV2.Frontend.Controllers
 {
-    [Authorize] 
     public class AccountController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;

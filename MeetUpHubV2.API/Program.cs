@@ -99,6 +99,9 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 builder.Services.AddScoped<IMatchingService, MatchingManager>();
 
+builder.Services.AddScoped<IUserService, UserManager>();
+
+
 // SignalR + In-Memory Cache
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();

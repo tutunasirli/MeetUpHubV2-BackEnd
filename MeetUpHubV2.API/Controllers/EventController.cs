@@ -3,6 +3,10 @@ using MeetUpHubV2.Entities.Dtos.EventDtos;
 using MeetUpHubV2.Entities;
 using Microsoft.AspNetCore.Mvc;
 
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
+
 namespace MeetUpHubV2.API.Controllers
 {
     [ApiController]
@@ -74,5 +78,21 @@ namespace MeetUpHubV2.API.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [Authorize]
+[HttpGet("my")]
+public async Task<IActionResult> GetMyEvents()
+{
+    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    if (userIdClaim == null)
+        return Unauthorized();
+
+    int userId = int.Parse(userIdClaim);
+
+    var events = await _eventService.GetEventsByUserIdAsync(userId);
+    return Ok(events);
+}
+
     }
 }

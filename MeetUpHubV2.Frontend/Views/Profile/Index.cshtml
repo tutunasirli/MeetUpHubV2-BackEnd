@@ -1,0 +1,151 @@
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<div class="container mt-4">
+
+    <!-- KAPAK + PROFİL -->
+    <div class="profile-header shadow-sm mb-5">
+        <div class="profile-cover"></div>
+
+        <div class="profile-info d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex align-items-center gap-4">
+                <div class="profile-avatar-lg">
+                    <span id="avatarLetter">A</span>
+                </div>
+
+                <div>
+                    <h3 class="fw-bold mb-0" id="fullName">İsim Soyisim</h3>
+                    <p class="text-muted mb-1" id="email">email@example.com</p>
+                    <small class="text-secondary">
+                        Kayıt Tarihi: <span id="registerDate">-</span>
+                    </small>
+                </div>
+            </div>
+
+            <a href="#" class="btn btn-outline-danger mt-3 mt-md-0">
+                ✏️ Profili Düzenle
+            </a>
+        </div>
+
+        <!-- İSTATİSTİKLER -->
+        <div class="profile-stats">
+            <div class="stat-box">
+                <strong id="eventCount">0</strong>
+                <span>Etkinlik</span>
+            </div>
+            <div class="stat-box">
+                <strong>4.8</strong>
+                <span>Puan</span>
+            </div>
+            <div class="stat-box">
+                <strong>12</strong>
+                <span>Takipçi</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HAKKIMDA -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="fw-semibold">🙋‍♀️ Hakkımda</h5>
+            <p class="text-muted mb-0">
+                Sosyal etkinlikleri seven, yeni insanlarla tanışmayı seven bir MeetUpHub kullanıcısı.
+            </p>
+        </div>
+    </div>
+
+    <!-- İLGİ ALANLARI -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-body">
+            <h5 class="fw-semibold mb-3">🏷 İlgi Alanları</h5>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark">☕ Kahve</span>
+                <span class="badge bg-light text-dark">🎮 Oyun</span>
+                <span class="badge bg-light text-dark">💻 Yazılım</span>
+                <span class="badge bg-light text-dark">🎵 Müzik</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ETKİNLİKLER -->
+    <h4 class="mb-3">📅 Etkinliklerim</h4>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <button class="nav-link active">Gelecek</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link">Geçmiş</button>
+        </li>
+    </ul>
+
+    <div id="eventsContainer" class="row g-4"></div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="profile-footer mt-5">
+    <p>© 2025 MeetUpHub</p>
+    <div class="social-icons">
+        <i class="fab fa-instagram"></i>
+        <i class="fab fa-twitter"></i>
+        <i class="fab fa-linkedin"></i>
+    </div>
+</footer>
+
+@section Scripts {
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const token = localStorage.getItem("jwt_token");
+    if (!token) return;
+
+    const profileRes = await fetch("http://localhost:5292/api/profile/me", {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const profile = await profileRes.json();
+
+    document.getElementById("fullName").innerText =
+        `${profile.name} ${profile.surname}`;
+
+    document.getElementById("email").innerText = profile.email;
+
+    document.getElementById("registerDate").innerText =
+        new Date(profile.registrationDate).toLocaleDateString();
+
+    document.getElementById("avatarLetter").innerText =
+        profile.name.charAt(0).toUpperCase();
+
+    const events = profile.events ?? [];
+    document.getElementById("eventCount").innerText = events.length;
+
+    const container = document.getElementById("eventsContainer");
+
+    if (events.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center p-5 empty-state">
+                <img src="https://cdn-icons-png.flaticon.com/512/747/747310.png" width="80" class="mb-3"/>
+                <h5>Henüz bir etkinliğe katılmadın</h5>
+                <p class="text-muted">Yeni insanlarla tanışmak için etkinlikleri keşfet!</p>
+                <a href="/" class="btn btn-danger">Etkinlikleri Keşfet</a>
+            </div>`;
+        return;
+    }
+
+    events.forEach(ev => {
+        container.innerHTML += `
+        <div class="col-md-6 col-lg-4">
+            <div class="card event-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <span class="badge bg-danger mb-2">${ev.category}</span>
+                    <h5 class="fw-semibold">${ev.title}</h5>
+                    <p class="text-muted small">${ev.description ?? ""}</p>
+                </div>
+            </div>
+        </div>`;
+    });
+});
+</script>
+}
