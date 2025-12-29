@@ -3,85 +3,99 @@
 }
 
 <div class="container mt-4">
+    <div class="row">
 
-    <!-- KAPAK + PROFİL -->
-    <div class="profile-header shadow-sm mb-5">
-        <div class="profile-cover"></div>
+        <!-- SOL PROFİL KARTI -->
+        <div class="col-lg-4 mb-4">
+            <div class="profile-side-card shadow-sm">
 
-        <div class="profile-info d-flex justify-content-between align-items-center flex-wrap">
-            <div class="d-flex align-items-center gap-4">
                 <div class="profile-avatar-lg">
                     <span id="avatarLetter">A</span>
                 </div>
 
-                <div>
-                    <h3 class="fw-bold mb-0" id="fullName">İsim Soyisim</h3>
-                    <p class="text-muted mb-1" id="email">email@example.com</p>
-                    <small class="text-secondary">
-                        Kayıt Tarihi: <span id="registerDate">-</span>
-                    </small>
+                <h4 class="text-center mt-3 mb-0" id="fullName">İsim Soyisim</h4>
+                <p class="text-muted text-center small mb-2" id="email">
+                    email@example.com
+                </p>
+
+                <p class="text-center small text-secondary">
+                    Kayıt: <span id="registerDate">-</span>
+                </p>
+
+                <div class="d-flex justify-content-around mt-4">
+                    <div class="text-center">
+                        <strong id="eventCount">0</strong>
+                        <div class="small text-muted">Etkinlik</div>
+                    </div>
+                    <div class="text-center">
+                        <strong>⭐ <span id="userRating">0.0</span></strong>
+                        <div class="small text-muted">Puan</div>
+                    </div>
                 </div>
-            </div>
 
-            <a href="#" class="btn btn-outline-danger mt-3 mt-md-0">
-                ✏️ Profili Düzenle
-            </a>
+                <button type="button" class="btn btn-outline-danger mt-3 mt-md-0"
+        data-bs-toggle="modal" data-bs-target="#editProfileModal">
+    ✏️ Profili Düzenle
+</button>
+
+            </div>
         </div>
 
-        <!-- İSTATİSTİKLER -->
-        <div class="profile-stats">
-            <div class="stat-box">
-                <strong id="eventCount">0</strong>
-                <span>Etkinlik</span>
-            </div>
-            <div class="stat-box">
-                <strong>4.8</strong>
-                <span>Puan</span>
-            </div>
-            <div class="stat-box">
-                <strong>12</strong>
-                <span>Takipçi</span>
-            </div>
+        <!-- SAĞ İÇERİK -->
+        <div class="col-lg-8">
+
+            <!-- HAKKIMDA -->
+            <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="fw-semibold">🙋‍♀️ Hakkımda</h5>
+        <p class="text-muted mb-0" id="aboutText">
+            Yükleniyor...
+        </p>
+    </div>
+</div>
+
+
+            <!-- ETKİNLİKLER -->
+            <h4 class="mb-3">📅 Etkinliklerim</h4>
+
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item">
+                    <button class="nav-link active">Gelecek</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link">Geçmiş</button>
+                </li>
+            </ul>
+
+            <div id="eventsContainer" class="row g-4"></div>
         </div>
     </div>
+</div>
 
-    <!-- HAKKIMDA -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="fw-semibold">🙋‍♀️ Hakkımda</h5>
-            <p class="text-muted mb-0">
-                Sosyal etkinlikleri seven, yeni insanlarla tanışmayı seven bir MeetUpHub kullanıcısı.
-            </p>
-        </div>
+
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title">Profili Düzenle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="form-label fw-semibold">Hakkımda</label>
+        <textarea id="aboutInput" class="form-control" rows="4"
+                  placeholder="Kendinden kısaca bahset..."></textarea>
+        <small class="text-muted d-block mt-2">
+          Örn: “Kahve severim, yeni insanlarla tanışmayı seviyorum.”
+        </small>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Vazgeç</button>
+        <button id="saveAboutBtn" class="btn btn-danger">Kaydet</button>
+      </div>
     </div>
-
-    <!-- İLGİ ALANLARI -->
-    <div class="card border-0 shadow-sm mb-5">
-        <div class="card-body">
-            <h5 class="fw-semibold mb-3">🏷 İlgi Alanları</h5>
-            <div class="d-flex flex-wrap gap-2">
-                <span class="badge bg-light text-dark">☕ Kahve</span>
-                <span class="badge bg-light text-dark">🎮 Oyun</span>
-                <span class="badge bg-light text-dark">💻 Yazılım</span>
-                <span class="badge bg-light text-dark">🎵 Müzik</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ETKİNLİKLER -->
-    <h4 class="mb-3">📅 Etkinliklerim</h4>
-
-    <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-            <button class="nav-link active">Gelecek</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link">Geçmiş</button>
-        </li>
-    </ul>
-
-    <div id="eventsContainer" class="row g-4"></div>
-
+  </div>
 </div>
 
 <!-- FOOTER -->
@@ -101,6 +115,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("jwt_token");
     if (!token) return;
 
+    // 🔹 PROFİL BİLGİLERİ
     const profileRes = await fetch("http://localhost:5292/api/profile/me", {
         headers: { "Authorization": `Bearer ${token}` }
     });
@@ -121,6 +136,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     const events = profile.events ?? [];
     document.getElementById("eventCount").innerText = events.length;
 
+    // ✅ HAKKIMDA GÖSTER
+    document.getElementById("aboutText").innerText =
+        profile.about && profile.about.trim() !== ""
+            ? profile.about
+            : "Henüz bir açıklama eklenmemiş.";
+
+    // ⭐ PROFİL PUANI
+    try {
+        const ratingRes = await fetch(
+            `http://localhost:5292/api/rating/${profile.id}`,
+            { headers: { "Authorization": `Bearer ${token}` } }
+        );
+
+        if (ratingRes.ok) {
+            const rating = await ratingRes.json();
+            document.getElementById("userRating").innerText =
+                rating.toFixed(1);
+        }
+    } catch {}
+
+    // 🔹 ETKİNLİKLER
     const container = document.getElementById("eventsContainer");
 
     if (events.length === 0) {
@@ -131,21 +167,54 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <p class="text-muted">Yeni insanlarla tanışmak için etkinlikleri keşfet!</p>
                 <a href="/" class="btn btn-danger">Etkinlikleri Keşfet</a>
             </div>`;
-        return;
+    } else {
+        events.forEach(ev => {
+            container.innerHTML += `
+            <div class="col-md-6">
+                <div class="card event-card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <span class="badge bg-danger mb-2">${ev.category}</span>
+                        <h5 class="fw-semibold">${ev.title}</h5>
+                        <p class="text-muted small">${ev.description ?? ""}</p>
+                    </div>
+                </div>
+            </div>`;
+        });
     }
 
-    events.forEach(ev => {
-        container.innerHTML += `
-        <div class="col-md-6 col-lg-4">
-            <div class="card event-card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <span class="badge bg-danger mb-2">${ev.category}</span>
-                    <h5 class="fw-semibold">${ev.title}</h5>
-                    <p class="text-muted small">${ev.description ?? ""}</p>
-                </div>
-            </div>
-        </div>`;
+    // ===============================
+    // ✏️ HAKKIMDA KAYDET (EKSİK OLAN ADIM)
+    // ===============================
+    document.getElementById("saveAboutBtn").addEventListener("click", async () => {
+
+        const about = document.getElementById("aboutInput").value;
+
+        const res = await fetch("http://localhost:5292/api/profile/me/about", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ about })
+        });
+
+        if (!res.ok) {
+            alert("Hakkımda güncellenemedi.");
+            return;
+        }
+
+        // ✅ Ekranı anında güncelle
+        document.getElementById("aboutText").innerText =
+            about.trim() !== "" ? about : "Henüz bir açıklama eklenmemiş.";
+
+        // ✅ Modal kapat
+        const modalEl = document.getElementById("editProfileModal");
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
     });
+
 });
 </script>
+}
+
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using MeetUpHubV2.Business.Abstract;
+using MeetUpHubV2.Entities.Dtos.ProfileDtos;
 
 namespace MeetUpHubV2.API.Controllers
 {
@@ -46,8 +47,33 @@ namespace MeetUpHubV2.API.Controllers
                 user.Surname,
                 user.Email,
                 user.RegistrationDate,
+                user.About,
                 Events = events
             });
+        }
+
+        // ✅ HAKKIMDA GÜNCELLEME (EKLENEN KISIM)
+        [HttpPut("me/about")]
+        public async Task<IActionResult> UpdateMyAbout([FromBody] UpdateAboutDto dto)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized("Kullanıcı bulunamadı.");
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Geçersiz kullanıcı bilgisi.");
+
+            var user = await _userService.GetByIdAsync(userId);
+            if (user == null)
+                return NotFound("Kullanıcı bulunamadı.");
+
+            user.About = dto.About?.Trim();
+
+            await _userService.UpdateAboutAsync(user.Id, dto.About);
+
+
+            return Ok(new { success = true });
         }
     }
 }

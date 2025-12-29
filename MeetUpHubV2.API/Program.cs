@@ -102,6 +102,10 @@ builder.Services.AddScoped<IMatchingService, MatchingManager>();
 builder.Services.AddScoped<IUserService, UserManager>();
 
 
+builder.Services.AddScoped<IUserRatingRepository, UserRatingRepository>();
+builder.Services.AddScoped<IUserRatingService, UserRatingManager>();
+
+
 // SignalR + In-Memory Cache
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();

@@ -19,5 +19,20 @@ namespace MeetUpHubV2.Business.Concrete
             return await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
+
+        // 🔹 EKLENEN METOT (HATAYI ÇÖZER)
+        public async Task<bool> UpdateAboutAsync(int userId, string? about)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return false;
+
+            user.About = about;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

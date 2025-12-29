@@ -61,5 +61,8 @@ namespace MeetUpHubV2.DataAccess
         public DbSet<UserRoom> UserRooms { get; set; } //Odalara katıulan kullanıcı bilgileri.
         public DbSet<Venue> Venues { get; set; } //Mekanlar tablosu.
         public DbSet<Event> Events { get; set; } //Etkinlik tablosu
+
+        public DbSet<UserRating> UserRatings { get; set; }
+
     }
 }

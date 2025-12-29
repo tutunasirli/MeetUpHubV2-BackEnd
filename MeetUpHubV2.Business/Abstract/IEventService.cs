@@ -16,5 +16,8 @@ namespace MeetUpHubV2.Business.Abstract
         Task<Event> UpdateAsync(UpdateEventDto updateEventDto);
         Task<List<Event>> GetEventsByUserIdAsync(int userId);
 
+        Task<bool> IsEventFinishedAsync(int eventId);
+
+
     }
 }

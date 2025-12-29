@@ -39,5 +39,8 @@ namespace MeetUpHubV2.Entities
         public string AccountStatus { get; set; }
         
         public virtual ICollection<UserRoom> UserRooms { get; set; }
+
+        public string? About { get; set; }
+
     }
 }

@@ -16,9 +16,9 @@ namespace MeetUpHubV2.Business.Concrete
         private readonly IVenueRepository _venueRepository;
 
         public EventManager(
-       IEventRepository eventRepository,
-       IRoomRepository roomRepository,
-       IVenueRepository venueRepository)
+            IEventRepository eventRepository,
+            IRoomRepository roomRepository,
+            IVenueRepository venueRepository)
         {
             _eventRepository = eventRepository;
             _roomRepository = roomRepository;
@@ -30,7 +30,6 @@ namespace MeetUpHubV2.Business.Concrete
             var room = await _roomRepository.GetRoomById(createEventDto.RoomId);
             if (room == null) throw new InvalidOperationException("Oda bulunamadı.");
 
-            // DTO'dan gelen VenueId null olabilir, bu durumda henüz bir mekan atanmamıştır.
             if (createEventDto.VenueId.HasValue)
             {
                 var venue = await _venueRepository.GetByIdAsync(createEventDto.VenueId.Value);
@@ -52,9 +51,7 @@ namespace MeetUpHubV2.Business.Concrete
             };
 
             await _eventRepository.AddAsync(newEvent);
-            // İş kuralı: Etkinlik oluşturulduktan sonra oda silinebilir.
             await _roomRepository.DeleteRoom(room);
-
         }
 
         public async Task<List<Event>> GetAllAsync()
@@ -74,12 +71,10 @@ namespace MeetUpHubV2.Business.Concrete
 
         public async Task<Event> UpdateAsync(UpdateEventDto updateEventDto)
         {
-            // Repository'deki düzeltilmiş GetByIdAsync metodu ilişkili tüm verileri getirecektir.
             var existingEvent = await _eventRepository.GetByIdAsync(updateEventDto.Id);
             if (existingEvent == null)
                 throw new InvalidOperationException("Güncellenecek etkinlik bulunamadı.");
 
-            // DTO'dan gelen verilerle mevcut entity'yi güncelle.
             existingEvent.Title = updateEventDto.Title;
             existingEvent.Description = updateEventDto.Description;
             existingEvent.Status = updateEventDto.Status;
@@ -87,9 +82,17 @@ namespace MeetUpHubV2.Business.Concrete
             existingEvent.Hour = updateEventDto.Hour;
             existingEvent.VenueId = updateEventDto.VenueId;
 
-            // Repository'deki düzeltilmiş UpdateAsync metodu, bu değişiklikleri
-            // veritabanına doğru bir şekilde yansıtacaktır.
             return await _eventRepository.UpdateAsync(existingEvent);
         }
+
+        public async Task<bool> IsEventFinishedAsync(int eventId)
+{
+    var ev = await _eventRepository.GetByIdAsync(eventId);
+    if (ev == null)
+        return false;
+
+    return DateTime.UtcNow > ev.EventTime;
+}
+
     }
 }
